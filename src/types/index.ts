@@ -1,7 +1,7 @@
 export type TaskStatus = 'todo' | 'doing' | 'done';
 export type Priority = 'now' | 'soon' | 'later';
 export type TaskTag = 'product' | 'marketing' | 'tech' | 'legal' | 'finance' | 'other';
-export type Assignee = 'alex' | 'sanya';
+export type Assignee = 'nikita' | 'sanya';
 
 export interface Task {
   id: string;
@@ -11,18 +11,18 @@ export interface Task {
   priority: Priority;
   tags: TaskTag[];
   assignee: Assignee;
-  deadline: string | null; // ISO date
+  deadline: string | null;
   createdAt: string;
   createdBy: 'agent' | 'user';
-  telegramMsgId?: number; // link back to source message
+  telegramMsgId?: number;
 }
 
 export interface Note {
   id: string;
   title: string;
-  content: string; // markdown
+  content: string;
   tags: string[];
-  links: string[]; // note IDs this note links to
+  links: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -30,16 +30,16 @@ export interface Note {
 export const TAG_LABELS: Record<TaskTag, string> = {
   product: 'Продукт',
   marketing: 'Маркетинг',
-  tech: 'Технологии',
-  legal: 'Юр. вопросы',
+  tech: 'Тех',
+  legal: 'Юр.',
   finance: 'Финансы',
   other: 'Другое',
 };
 
 export const PRIORITY_LABELS: Record<Priority, string> = {
-  now: '🔥 Сейчас',
-  soon: '📅 Скоро',
-  later: '💤 Потом',
+  now: 'Сейчас',
+  soon: 'Скоро',
+  later: 'Потом',
 };
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
@@ -49,8 +49,20 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
 };
 
 export const ASSIGNEE_LABELS: Record<Assignee, string> = {
-  alex: 'Алекс',
+  nikita: 'Никита',
   sanya: 'Саня',
+};
+
+export const PRIORITY_COLORS: Record<Priority, string> = {
+  now: '#000',
+  soon: '#888',
+  later: '#ccc',
+};
+
+export const STATUS_DOT: Record<TaskStatus, string> = {
+  todo: '#ccc',
+  doing: '#ffb800',
+  done: '#22c55e',
 };
 
 export type View = 'tasks' | 'kb';

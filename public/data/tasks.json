@@ -6,7 +6,7 @@
     "status": "done",
     "priority": "now",
     "tags": ["product"],
-    "assignee": "alex",
+    "assignee": "nikita",
     "deadline": "2026-08-10",
     "createdAt": "2026-08-05T10:00:00Z",
     "createdBy": "agent"
@@ -30,7 +30,7 @@
     "status": "todo",
     "priority": "now",
     "tags": ["product", "marketing"],
-    "assignee": "alex",
+    "assignee": "nikita",
     "deadline": "2026-08-18",
     "createdAt": "2026-08-07T09:00:00Z",
     "createdBy": "agent"
@@ -54,7 +54,7 @@
     "status": "doing",
     "priority": "soon",
     "tags": ["product"],
-    "assignee": "alex",
+    "assignee": "nikita",
     "deadline": "2026-08-12",
     "createdAt": "2026-08-06T08:00:00Z",
     "createdBy": "agent"
@@ -78,7 +78,7 @@
     "status": "todo",
     "priority": "soon",
     "tags": ["tech"],
-    "assignee": "alex",
+    "assignee": "nikita",
     "deadline": "2026-08-20",
     "createdAt": "2026-08-07T12:00:00Z",
     "createdBy": "user"

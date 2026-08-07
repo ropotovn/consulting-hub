@@ -15,7 +15,7 @@ const TaskForm: React.FC = () => {
   const [status, setStatus] = useState<TaskStatus>('todo');
   const [priority, setPriority] = useState<Priority>('soon');
   const [tags, setTags] = useState<TaskTag[]>([]);
-  const [assignee, setAssignee] = useState<Assignee>('alex');
+  const [assignee, setAssignee] = useState<Assignee>('nikita');
   const [deadline, setDeadline] = useState('');
 
   useEffect(() => {
@@ -27,6 +27,9 @@ const TaskForm: React.FC = () => {
       setTags(editingTask.tags);
       setAssignee(editingTask.assignee);
       setDeadline(editingTask.deadline?.split('T')[0] || '');
+    } else {
+      setTitle(''); setDescription(''); setStatus('todo'); setPriority('soon');
+      setTags([]); setAssignee('nikita'); setDeadline('');
     }
   }, [editingTask]);
 
@@ -40,106 +43,68 @@ const TaskForm: React.FC = () => {
 
     if (editingTask) {
       updateTask(editingTask.id, {
-        title: title.trim(),
-        description: description.trim(),
-        status,
-        priority,
-        tags,
-        assignee,
+        title: title.trim(), description: description.trim(),
+        status, priority, tags, assignee,
         deadline: deadline || null,
       });
     } else {
       addTask({
-        id: newId(),
-        title: title.trim(),
-        description: description.trim(),
-        status,
-        priority,
-        tags,
-        assignee,
+        id: newId(), title: title.trim(), description: description.trim(),
+        status, priority, tags, assignee,
         deadline: deadline || null,
-        createdAt: new Date().toISOString(),
-        createdBy: 'user',
+        createdAt: new Date().toISOString(), createdBy: 'user',
       });
     }
-
     handleClose();
   };
 
-  const handleClose = () => {
-    setShowTaskForm(false);
-    setEditingTask(null);
-  };
+  const handleClose = () => { setShowTaskForm(false); setEditingTask(null); };
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <form className="task-form" onSubmit={handleSubmit} onClick={e => e.stopPropagation()}>
         <div className="form-header">
-          <h3>{editingTask ? 'Редактировать задачу' : 'Новая задача'}</h3>
-          <button type="button" className="btn-close" onClick={handleClose}>✕</button>
+          <h3>{editingTask ? 'Edit task' : 'New task'}</h3>
+          <button type="button" className="btn-close" onClick={handleClose}>x</button>
         </div>
 
         <div className="form-body">
-          <input
-            className="input"
-            placeholder="Название задачи"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            autoFocus
-          />
-
-          <textarea
-            className="input textarea"
-            placeholder="Описание (опционально)"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            rows={3}
-          />
+          <input className="input" placeholder="Task title" value={title} onChange={e => setTitle(e.target.value)} autoFocus />
+          <textarea className="input textarea" placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} rows={2} />
 
           <div className="form-row">
             <div className="form-field">
-              <label>Статус</label>
+              <label>Status</label>
               <select className="input" value={status} onChange={e => setStatus(e.target.value as TaskStatus)}>
-                {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
+                {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <div className="form-field">
-              <label>Приоритет</label>
+              <label>Priority</label>
               <select className="input" value={priority} onChange={e => setPriority(e.target.value as Priority)}>
-                {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
+                {Object.entries(PRIORITY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-field">
-              <label>Ответственный</label>
+              <label>Assignee</label>
               <select className="input" value={assignee} onChange={e => setAssignee(e.target.value as Assignee)}>
-                {Object.entries(ASSIGNEE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
+                {Object.entries(ASSIGNEE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <div className="form-field">
-              <label>Дедлайн</label>
+              <label>Deadline</label>
               <input className="input" type="date" value={deadline} onChange={e => setDeadline(e.target.value)} />
             </div>
           </div>
 
           <div className="form-field">
-            <label>Теги</label>
+            <label>Tags</label>
             <div className="tag-grid">
               {(Object.entries(TAG_LABELS) as [TaskTag, string][]).map(([tag, label]) => (
-                <button
-                  key={tag}
-                  type="button"
-                  className={`tag-btn ${tags.includes(tag) ? 'active' : ''}`}
-                  onClick={() => toggleTag(tag)}
-                >
+                <button key={tag} type="button" className={`tag-btn ${tags.includes(tag) ? 'active' : ''}`} onClick={() => toggleTag(tag)}>
                   {label}
                 </button>
               ))}
@@ -149,19 +114,12 @@ const TaskForm: React.FC = () => {
 
         <div className="form-footer">
           {editingTask && (
-            <button
-              type="button"
-              className="btn-danger"
-              onClick={() => {
-                deleteTask(editingTask.id);
-                handleClose();
-              }}
-            >
-              Удалить
+            <button type="button" className="btn-danger" onClick={() => { deleteTask(editingTask.id); handleClose(); }}>
+              Delete
             </button>
           )}
           <button type="submit" className="btn-primary">
-            {editingTask ? 'Сохранить' : 'Создать'}
+            {editingTask ? 'Save' : 'Create'}
           </button>
         </div>
       </form>

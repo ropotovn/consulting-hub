@@ -7,8 +7,7 @@ const Sidebar: React.FC = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="logo-icon">⛰️</div>
-        <span className="logo-text">Штаб</span>
+        shtab
       </div>
 
       <nav className="sidebar-nav">
@@ -16,22 +15,18 @@ const Sidebar: React.FC = () => {
           className={`nav-item ${view === 'tasks' ? 'active' : ''}`}
           onClick={() => setView('tasks')}
         >
-          <span className="nav-icon">📋</span>
-          <span className="nav-label">Задачи</span>
+          Tasks
         </button>
         <button
           className={`nav-item ${view === 'kb' ? 'active' : ''}`}
           onClick={() => setView('kb')}
         >
-          <span className="nav-icon">📚</span>
-          <span className="nav-label">База знаний</span>
-          <span className="nav-badge">{notes.length}</span>
+          Knowledge
+          <span className="nav-count">{notes.length}</span>
         </button>
       </nav>
 
-      <div className="sidebar-footer">
-        <div className="sidebar-hint">Telegram Mini App</div>
-      </div>
+      <div className="sidebar-footer">v0.2</div>
     </aside>
   );
 };

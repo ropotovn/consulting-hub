@@ -21,6 +21,8 @@ const NoteEdit: React.FC = () => {
       setTitle(existingNote.title);
       setContent(existingNote.content);
       setTags(existingNote.tags.join(', '));
+    } else {
+      setTitle(''); setContent(''); setTags('');
     }
   }, [existingNote]);
 
@@ -29,33 +31,21 @@ const NoteEdit: React.FC = () => {
 
     const tagList = tags.split(',').map(t => t.trim()).filter(Boolean);
 
-    // Extract wiki-links [[note title]] from content
     const linkRegex = /\[\[([^\]]+)\]\]/g;
     const linkMatches = [...content.matchAll(linkRegex)];
     const linkTitles = linkMatches.map(m => m[1].trim());
-    const links = notes
-      .filter(n => linkTitles.includes(n.title))
-      .map(n => n.id);
+    const links = notes.filter(n => linkTitles.includes(n.title)).map(n => n.id);
 
     const now = new Date().toISOString();
 
     if (existingNote) {
       updateNote(existingNote.id, {
-        title: title.trim(),
-        content,
-        tags: tagList,
-        links,
-        updatedAt: now,
+        title: title.trim(), content, tags: tagList, links, updatedAt: now,
       });
     } else {
       addNote({
-        id: newId(),
-        title: title.trim(),
-        content,
-        tags: tagList,
-        links,
-        createdAt: now,
-        updatedAt: now,
+        id: newId(), title: title.trim(), content, tags: tagList, links,
+        createdAt: now, updatedAt: now,
       });
     }
 
@@ -68,39 +58,29 @@ const NoteEdit: React.FC = () => {
         <div className="editor-header">
           <input
             className="input editor-title"
-            placeholder="Название заметки"
+            placeholder="Note title"
             value={title}
             onChange={e => setTitle(e.target.value)}
             autoFocus
           />
           <div className="editor-actions">
-            <button
-              type="button"
-              className={`btn-ghost ${preview ? 'active' : ''}`}
-              onClick={() => setPreview(!preview)}
-            >
-              {preview ? '✏️ Редактировать' : '👁 Превью'}
+            <button type="button" className={`btn-ghost ${preview ? 'active' : ''}`} onClick={() => setPreview(!preview)}>
+              {preview ? 'Edit' : 'Preview'}
             </button>
-            <button type="button" className="btn-primary" onClick={handleSave}>
-              Сохранить
-            </button>
-            <button type="button" className="btn-close" onClick={() => setEditingNoteId(null)}>
-              ✕
-            </button>
+            <button type="button" className="btn-primary" onClick={handleSave}>Save</button>
+            <button type="button" className="btn-close" onClick={() => setEditingNoteId(null)}>x</button>
           </div>
         </div>
 
         {preview ? (
           <div className="editor-preview markdown-body">
             <h1>{title}</h1>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {content}
-            </ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>
         ) : (
           <textarea
             className="input editor-content"
-            placeholder="Пишите в Markdown. Используйте [[название заметки]] для ссылок."
+            placeholder="Markdown. Use [[note title]] for links."
             value={content}
             onChange={e => setContent(e.target.value)}
           />
@@ -109,11 +89,11 @@ const NoteEdit: React.FC = () => {
         <div className="editor-footer">
           <input
             className="input"
-            placeholder="Теги через запятую: продукт, стратегия"
+            placeholder="Tags: strategy, product"
             value={tags}
             onChange={e => setTags(e.target.value)}
           />
-          <span className="editor-hint">Markdown • [[ссылки]] на другие заметки</span>
+          <span className="editor-hint">md [[links]]</span>
         </div>
       </div>
     </div>

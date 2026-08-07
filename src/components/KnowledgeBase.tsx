@@ -6,103 +6,114 @@ import remarkGfm from 'remark-gfm';
 const KnowledgeBase: React.FC = () => {
   const { notes, selectedNoteId, setSelectedNoteId, setEditingNoteId, deleteNote } = useStore();
 
-  if (selectedNoteId) {
-    const note = notes.find(n => n.id === selectedNoteId);
-    if (!note) return null;
+  // Find notes that link TO the currently selected note
+  const backlinks = selectedNoteId
+    ? notes.filter(n => n.links.includes(selectedNoteId))
+    : [];
 
-    return (
-      <div className="kb-note-view">
-        <div className="kb-note-header">
-          <button className="btn-back" onClick={() => setSelectedNoteId(null)}>
-            ← Назад
-          </button>
-          <div className="kb-note-actions">
-            <button className="btn-ghost" onClick={() => setEditingNoteId(note.id)}>
-              ✏️
-            </button>
-            <button className="btn-ghost" onClick={() => {
-              if (window.confirm('Удалить заметку?')) {
-                deleteNote(note.id);
-                setSelectedNoteId(null);
-              }
-            }}>
-              🗑️
-            </button>
-          </div>
-        </div>
-        <div className="kb-note-meta">
-          <span>Обновлено: {new Date(note.updatedAt).toLocaleDateString('ru-RU')}</span>
-          {note.tags.length > 0 && (
-            <div className="kb-tags">
-              {note.tags.map(tag => (
-                <span key={tag} className="kb-tag">{tag}</span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="kb-note-content markdown-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {note.content}
-          </ReactMarkdown>
-        </div>
-        {note.links.length > 0 && (
-          <div className="kb-note-links">
-            <h4>Связанные заметки</h4>
-            {note.links.map(linkId => {
-              const linked = notes.find(n => n.id === linkId);
-              return linked ? (
-                <button
-                  key={linkId}
-                  className="kb-link-btn"
-                  onClick={() => setSelectedNoteId(linkId)}
-                >
-                  📄 {linked.title}
-                </button>
-              ) : null;
-            })}
-          </div>
-        )}
-      </div>
-    );
-  }
+  const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) : null;
 
   return (
-    <div className="kb-list">
-      <div className="kb-header">
-        <h2>📚 База знаний</h2>
-        <button className="btn-primary" onClick={() => setEditingNoteId('new')}>
-          + Новая заметка
-        </button>
-      </div>
-      <div className="kb-grid">
+    <div className="kb-layout">
+      {/* File tree */}
+      <div className="kb-files">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span className="kb-files-title">Notes</span>
+          <button
+            className="btn-ghost"
+            style={{ padding: '2px 8px', fontSize: 11 }}
+            onClick={() => setEditingNoteId('new')}
+          >
+            +
+          </button>
+        </div>
         {notes.map(note => (
           <div
             key={note.id}
-            className="kb-card"
+            className={`kb-file-item ${selectedNoteId === note.id ? 'active' : ''}`}
             onClick={() => setSelectedNoteId(note.id)}
           >
-            <h3 className="kb-card-title">{note.title}</h3>
-            <p className="kb-card-preview">
-              {note.content.replace(/[#*`\n\[\]]/g, '').slice(0, 120)}...
-            </p>
-            <div className="kb-card-footer">
-              <div className="kb-card-tags">
-                {note.tags.slice(0, 3).map(tag => (
-                  <span key={tag} className="kb-tag">{tag}</span>
-                ))}
-              </div>
-              <span className="kb-card-date">
-                {new Date(note.updatedAt).toLocaleDateString('ru-RU')}
-              </span>
-            </div>
+            <span className="kb-file-icon">#</span>
+            {note.title}
           </div>
         ))}
+        {notes.length === 0 && (
+          <div style={{ color: 'var(--text-muted)', fontSize: 11, padding: '8px 0', fontFamily: 'var(--font-mono)' }}>
+            No notes yet
+          </div>
+        )}
       </div>
-      {notes.length === 0 && (
-        <div className="kb-empty">
-          <p>Пока нет заметок. Создайте первую!</p>
-        </div>
-      )}
+
+      {/* Note content */}
+      <div className="kb-note-panel">
+        {selectedNote ? (
+          <>
+            <div className="kb-note-header">
+              <button className="btn-back" onClick={() => setSelectedNoteId(null)}>
+                &larr; All notes
+              </button>
+              <div className="kb-note-actions">
+                <button className="btn-ghost" onClick={() => setEditingNoteId(selectedNote.id)}>
+                  Edit
+                </button>
+                <button className="btn-ghost" onClick={() => {
+                  if (window.confirm('Delete this note?')) { deleteNote(selectedNote.id); setSelectedNoteId(null); }
+                }}>
+                  Del
+                </button>
+              </div>
+            </div>
+
+            <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-mono)', marginBottom: 4 }}>
+              {selectedNote.title}
+            </h2>
+
+            <div className="kb-note-meta">
+              <span>Updated {new Date(selectedNote.updatedAt).toLocaleDateString('ru-RU')}</span>
+              {selectedNote.tags.length > 0 && (
+                <div className="kb-tags">
+                  {selectedNote.tags.map(tag => <span key={tag} className="kb-tag">{tag}</span>)}
+                </div>
+              )}
+            </div>
+
+            <div className="kb-note-content markdown-body">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedNote.content}</ReactMarkdown>
+            </div>
+
+            {/* Linked notes */}
+            {selectedNote.links.length > 0 && (
+              <div className="kb-backlinks">
+                <div className="kb-backlinks-title">Links</div>
+                {selectedNote.links.map(linkId => {
+                  const linked = notes.find(n => n.id === linkId);
+                  return linked ? (
+                    <button key={linkId} className="kb-backlink-item" onClick={() => setSelectedNoteId(linkId)}>
+                      {linked.title}
+                    </button>
+                  ) : null;
+                })}
+              </div>
+            )}
+
+            {/* Backlinks */}
+            {backlinks.length > 0 && (
+              <div className="kb-linked-from">
+                <div className="kb-backlinks-title">Linked from</div>
+                {backlinks.map(n => (
+                  <button key={n.id} className="kb-backlink-item" onClick={() => setSelectedNoteId(n.id)}>
+                    {n.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>
+            Select a note
+          </div>
+        )}
+      </div>
     </div>
   );
 };
