@@ -1,5 +1,6 @@
 import React from 'react';
 import { StoreProvider, useStore } from './hooks/useStore';
+import { ThemeProvider } from './hooks/useTheme';
 import { useTelegram } from './hooks/useTelegram';
 import Sidebar from './components/Sidebar';
 import TaskBoard from './components/TaskBoard';
@@ -9,14 +10,13 @@ import NoteEdit from './components/NoteEdit';
 import './App.css';
 
 const AppInner: React.FC = () => {
-  const { view, showTaskForm, editingNoteId } = useStore();
+  const { view, showTaskForm, editingNoteId, setView } = useStore();
   const { isReady } = useTelegram();
 
   if (!isReady) {
     return (
       <div className="loading-screen">
-        <div className="loading-spinner" />
-        <p>Загрузка...</p>
+        shtab
       </div>
     );
   }
@@ -29,14 +29,36 @@ const AppInner: React.FC = () => {
       </main>
       {showTaskForm && <TaskForm />}
       {editingNoteId && <NoteEdit />}
+
+      {/* Mobile bottom nav */}
+      <nav className="mobile-nav">
+        <div className="mobile-nav-inner">
+          <button
+            className={`mobile-nav-btn ${view === 'tasks' ? 'active' : ''}`}
+            onClick={() => setView('tasks')}
+          >
+            <span className="mobile-nav-btn-icon">=</span>
+            Tasks
+          </button>
+          <button
+            className={`mobile-nav-btn ${view === 'kb' ? 'active' : ''}`}
+            onClick={() => setView('kb')}
+          >
+            <span className="mobile-nav-btn-icon">#</span>
+            Knowledge
+          </button>
+        </div>
+      </nav>
     </div>
   );
 };
 
 const App: React.FC = () => (
-  <StoreProvider>
-    <AppInner />
-  </StoreProvider>
+  <ThemeProvider>
+    <StoreProvider>
+      <AppInner />
+    </StoreProvider>
+  </ThemeProvider>
 );
 
 export default App;
