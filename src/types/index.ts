@@ -85,3 +85,9 @@ export interface BoardBlock {
   width: number;
   height: number;
 }
+
+export interface BoardConnection {
+  id: string;
+  fromId: string;
+  toId: string;
+}
