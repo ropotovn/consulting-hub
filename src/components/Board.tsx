@@ -29,7 +29,6 @@ const Board = React.memo(function Board() {
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<{ startX: number; startY: number } | null>(null);
-  const dragRef = useRef<{ id: string; startX: number; startY: number; mouseX: number; mouseY: number } | null>(null);
   const arrowRef = useRef<{ fromId: string } | null>(null);
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
@@ -136,30 +135,42 @@ const Board = React.memo(function Board() {
     document.addEventListener('mouseup', handleUp);
   }, []);
 
-  // Block drag
+  // Block drag — direct DOM to avoid re-renders during drag
   const handleBlockMouseDown = useCallback((e: React.MouseEvent, block: BoardBlock) => {
     if (editingId === block.id) return;
     if ((e.target as HTMLElement).closest('.board-connector')) return;
     e.stopPropagation();
 
-    dragRef.current = { id: block.id, startX: block.x, startY: block.y, mouseX: e.clientX, mouseY: e.clientY };
+    const el = (e.currentTarget as HTMLElement);
+    const startX = block.x;
+    const startY = block.y;
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+    el.style.zIndex = '10';
+    el.style.transition = 'none';
 
     const handleMove = (ev: MouseEvent) => {
-      if (!dragRef.current) return;
-      const dx = ev.clientX - dragRef.current.mouseX;
-      const dy = ev.clientY - dragRef.current.mouseY;
-      setBlocks(prev => prev.map(b =>
-        b.id === dragRef.current!.id
-          ? { ...b, x: Math.max(0, dragRef.current!.startX + dx), y: Math.max(0, dragRef.current!.startY + dy) }
-          : b
-      ));
+      const dx = ev.clientX - mouseX;
+      const dy = ev.clientY - mouseY;
+      el.style.transform = `translate(${Math.max(-startX, dx)}px, ${Math.max(-startY, dy)}px)`;
     };
 
-    const handleUp = () => {
-      if (dragRef.current) {
-        setBlocks(prev => { save(STORAGE_BLOCKS, prev); return prev; });
+    const handleUp = (ev: MouseEvent) => {
+      const dx = ev.clientX - mouseX;
+      const dy = ev.clientY - mouseY;
+      el.style.transform = '';
+      el.style.zIndex = '';
+      el.style.transition = '';
+
+      const newX = Math.max(0, startX + dx);
+      const newY = Math.max(0, startY + dy);
+      if (newX !== startX || newY !== startY) {
+        setBlocks(prev => {
+          const next = prev.map(b => b.id === block.id ? { ...b, x: newX, y: newY } : b);
+          save(STORAGE_BLOCKS, next);
+          return next;
+        });
       }
-      dragRef.current = null;
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleUp);
     };
