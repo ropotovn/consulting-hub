@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { Assignee } from '../types';
 
 interface TelegramUser {
   id: number;
@@ -7,25 +8,18 @@ interface TelegramUser {
   username?: string;
 }
 
-interface TelegramTheme {
-  bg_color: string;
-  text_color: string;
-  hint_color: string;
-  link_color: string;
-  button_color: string;
-  button_text_color: string;
-  secondary_bg_color: string;
-}
+const ID_MAP: Record<number, Assignee> = {
+  476641608: 'nikita',
+  357499890: 'sanya',
+};
 
 export function useTelegram() {
   const [user, setUser] = useState<TelegramUser | null>(null);
-  const [theme, setTheme] = useState<TelegramTheme | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (!tg) {
-      // Running outside Telegram — use defaults
       setIsReady(true);
       return;
     }
@@ -34,18 +28,12 @@ export function useTelegram() {
     tg.expand();
 
     setUser(tg.initDataUnsafe?.user || null);
-    setTheme({
-      bg_color: tg.themeParams.bg_color || '#1a1b2e',
-      text_color: tg.themeParams.text_color || '#e4e4e7',
-      hint_color: tg.themeParams.hint_color || '#71717a',
-      link_color: tg.themeParams.link_color || '#a78bfa',
-      button_color: tg.themeParams.button_color || '#7c3aed',
-      button_text_color: tg.themeParams.button_text_color || '#ffffff',
-      secondary_bg_color: tg.themeParams.secondary_bg_color || '#252640',
-    });
-
     setIsReady(true);
   }, []);
+
+  // Auto-detect who's using the app based on Telegram ID
+  const currentUser: Assignee | null = user ? (ID_MAP[user.id] || null) : null;
+  const currentUserName = currentUser === 'nikita' ? 'Никита' : currentUser === 'sanya' ? 'Саня' : null;
 
   const showConfirm = (message: string): Promise<boolean> => {
     const tg = (window as any).Telegram?.WebApp;
@@ -71,5 +59,5 @@ export function useTelegram() {
     }
   };
 
-  return { user, theme, isReady, showConfirm, showAlert, haptic };
+  return { user, currentUser, currentUserName, isReady, showConfirm, showAlert, haptic };
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
+import { useTelegram } from '../hooks/useTelegram';
 import { TAG_LABELS, PRIORITY_LABELS, STATUS_LABELS, ASSIGNEE_LABELS } from '../types';
 import type { TaskStatus, Priority, TaskTag, Assignee, TaskComment } from '../types';
 
@@ -9,6 +10,7 @@ function newId(): string {
 
 const TaskForm: React.FC = () => {
   const { addTask, updateTask, deleteTask, editingTask, setShowTaskForm, setEditingTask } = useStore();
+  const { currentUser, currentUserName } = useTelegram();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -43,10 +45,12 @@ const TaskForm: React.FC = () => {
 
   const addComment = () => {
     if (!commentText.trim()) return;
+    const author: Assignee = currentUser || assignee;
+    const authorName = currentUserName || ASSIGNEE_LABELS[assignee];
     const comment: TaskComment = {
       id: 'c' + Date.now().toString(36),
-      author: assignee,
-      authorName: ASSIGNEE_LABELS[assignee],
+      author,
+      authorName,
       text: commentText.trim(),
       createdAt: new Date().toISOString(),
     };
@@ -131,7 +135,14 @@ const TaskForm: React.FC = () => {
 
           {editingTask && (
             <div className="comments-section">
-              <div className="comments-title">Comments</div>
+              <div className="comments-title">
+                Comments
+                {currentUserName && (
+                  <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
+                    as {currentUserName}
+                  </span>
+                )}
+              </div>
               {taskComments.map(c => (
                 <div key={c.id} className="comment-item">
                   <div className="comment-author">
