@@ -42,33 +42,31 @@ function closestSide(block: BoardBlock, px: number, py: number): ConnectorSide {
   return sides.sort((a, b) => a.dist - b.dist)[0].side;
 }
 
-// Orthogonal path between two connector points
-function orthoPath(x1: number, y1: number, x2: number, y2: number, side1: ConnectorSide, side2: ConnectorSide): string {
-  const margin = 30;
-  const midY = (y1 + y2) / 2;
+// Smooth bezier between two connector points
+function bezierPath(x1: number, y1: number, x2: number, y2: number, side1: ConnectorSide, side2: ConnectorSide): string {
+  // Control point offset — how far the curve extends in the connector's direction
+  const dist = Math.hypot(x2 - x1, y2 - y1);
+  const offset = Math.max(40, dist * 0.4);
 
-  // Same side or adjacent — use mid-point routing
-  if (side1 === side2) {
-    // Route outward then across
-    if (side1 === 'top' || side1 === 'bottom') {
-      const outY = side1 === 'top' ? Math.min(y1, y2) - margin : Math.max(y1, y2) + margin;
-      return `M ${x1} ${y1} L ${x1} ${outY} L ${x2} ${outY} L ${x2} ${y2}`;
-    } else {
-      const outX = side1 === 'left' ? Math.min(x1, x2) - margin : Math.max(x1, x2) + margin;
-      return `M ${x1} ${y1} L ${outX} ${y1} L ${outX} ${y2} L ${x2} ${y2}`;
+  // Direction vector for each connector
+  const dir = (side: ConnectorSide): [number, number] => {
+    switch (side) {
+      case 'top':    return [0, -1];
+      case 'bottom': return [0, 1];
+      case 'left':   return [-1, 0];
+      case 'right':  return [1, 0];
     }
-  }
+  };
 
-  // Top/bottom connecting to left/right — use L-shaped path
-  if ((side1 === 'top' || side1 === 'bottom') && (side2 === 'left' || side2 === 'right')) {
-    return `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
-  }
-  if ((side1 === 'left' || side1 === 'right') && (side2 === 'top' || side2 === 'bottom')) {
-    return `M ${x1} ${y1} L ${x2} ${y1} L ${x2} ${y2}`;
-  }
+  const [dx1, dy1] = dir(side1);
+  const [dx2, dy2] = dir(side2);
 
-  // Opposite sides — S-curve
-  return `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
+  const cp1x = x1 + dx1 * offset;
+  const cp1y = y1 + dy1 * offset;
+  const cp2x = x2 + dx2 * offset;
+  const cp2y = y2 + dy2 * offset;
+
+  return `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
 }
 
 const Board = React.memo(function Board() {
@@ -149,7 +147,7 @@ const Board = React.memo(function Board() {
     const handleMove = (ev: MouseEvent) => {
       if (!arrowRef.current) return;
       const ep = canvasXY(ev.clientX, ev.clientY);
-      setArrowPreview({ d: orthoPath(p.x, p.y, ep.x, ep.y, side, 'right') });
+      setArrowPreview({ d: bezierPath(p.x, p.y, ep.x, ep.y, side, 'right') });
     };
 
     const handleUp = (ev: MouseEvent) => {
@@ -253,11 +251,11 @@ const Board = React.memo(function Board() {
             if (!from || !to) return null;
             const p1 = connectorXY(from, conn.fromSide);
             const p2 = connectorXY(to, conn.toSide);
-            const path = orthoPath(p1.x, p1.y, p2.x, p2.y, conn.fromSide, conn.toSide);
+            const path = bezierPath(p1.x, p1.y, p2.x, p2.y, conn.fromSide, conn.toSide);
             return (
               <g key={conn.id}>
                 <path d={path} className="board-arrow-path" />
-                <circle cx={p2.x} cy={p2.y} r={3} className="board-arrow-head" />
+                <circle cx={p2.x} cy={p2.y} r={3.5} className="board-arrow-head" />
                 <path d={path} className="board-arrow-hit" onClick={() => deleteConnection(conn.id)} />
               </g>
             );
