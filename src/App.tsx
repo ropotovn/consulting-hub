@@ -7,6 +7,7 @@ import TaskBoard from './components/TaskBoard';
 import TaskForm from './components/TaskForm';
 import KnowledgeBase from './components/KnowledgeBase';
 import NoteEdit from './components/NoteEdit';
+import Board from './components/Board';
 import './App.css';
 
 const AppInner: React.FC = () => {
@@ -38,7 +39,7 @@ const AppInner: React.FC = () => {
             />
           ))}
         </div>
-        {view === 'tasks' ? <TaskBoard /> : <KnowledgeBase />}
+        {view === 'tasks' ? <TaskBoard /> : view === 'kb' ? <KnowledgeBase /> : <Board />}
       </main>
       {showTaskForm && <TaskForm />}
       {editingNoteId && <NoteEdit />}
@@ -59,6 +60,13 @@ const AppInner: React.FC = () => {
           >
             <span className="mobile-nav-btn-icon">#</span>
             Knowledge
+          </button>
+          <button
+            className={`mobile-nav-btn ${view === 'board' ? 'active' : ''}`}
+            onClick={() => setView('board')}
+          >
+            <span className="mobile-nav-btn-icon">+</span>
+            Board
           </button>
         </div>
       </nav>

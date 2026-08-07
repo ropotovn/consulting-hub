@@ -74,4 +74,14 @@ export const STATUS_DOT: Record<TaskStatus, string> = {
   done: '#22c55e',
 };
 
-export type View = 'tasks' | 'kb';
+export type View = 'tasks' | 'kb' | 'board';
+
+export interface BoardBlock {
+  id: string;
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+  width: number;
+  height: number;
+}

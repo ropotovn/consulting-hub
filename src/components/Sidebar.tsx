@@ -32,6 +32,9 @@ const Sidebar: React.FC = () => {
           Knowledge
           <span className="nav-count">{notes.length}</span>
         </button>
+        <button className={`nav-item ${view === 'board' ? 'active' : ''}`} onClick={() => setView('board')}>
+          Board
+        </button>
       </nav>
 
       <div className="theme-picker">
