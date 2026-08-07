@@ -86,8 +86,12 @@ export interface BoardBlock {
   height: number;
 }
 
+export type ConnectorSide = 'top' | 'right' | 'bottom' | 'left';
+
 export interface BoardConnection {
   id: string;
   fromId: string;
+  fromSide: ConnectorSide;
   toId: string;
+  toSide: ConnectorSide;
 }
