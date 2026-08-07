@@ -474,22 +474,74 @@ select.input { cursor: pointer; appearance: none; }
   display: none;
   position: fixed; bottom: 0; left: 0; right: 0;
   background: var(--bg); border-top: 1px solid var(--border);
-  padding: 6px 0 env(safe-area-inset-bottom, 0);
+  padding: 4px 0 env(safe-area-inset-bottom, 0);
   z-index: 50;
 }
 
 .mobile-nav-inner {
-  display: flex; justify-content: space-around;
+  display: flex; justify-content: space-around; align-items: center;
 }
 
 .mobile-nav-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 4px 12px; border: none; background: none;
-  color: var(--text-muted); font-size: 10px; font-family: var(--font-mono);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 3px 10px; border: none; background: none;
+  color: var(--text-muted); font-size: 9px; font-family: var(--font-mono);
   cursor: pointer;
 }
 .mobile-nav-btn.active { color: var(--text); font-weight: 600; }
-.mobile-nav-btn-icon { font-size: 16px; }
+.mobile-nav-btn-icon { font-size: 14px; }
+
+/* Mobile theme strip */
+.mobile-theme-strip {
+  display: none;
+  overflow-x: auto;
+  padding: 8px 12px;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-theme-strip .theme-dot {
+  min-width: 24px; width: 24px; height: 24px;
+}
+
+/* Comments */
+.comments-section {
+  margin-top: 16px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.comments-title {
+  font-size: 10px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 8px; font-family: var(--font-mono);
+}
+
+.comment-item {
+  padding: 6px 8px; margin-bottom: 4px;
+  background: var(--bg-secondary); border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.comment-author {
+  font-size: 9px; color: var(--text-muted); margin-bottom: 2px;
+  font-family: var(--font-mono);
+}
+
+.comment-text {
+  font-size: 12px; color: var(--text); line-height: 1.4;
+}
+
+.comment-input-row {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+
+.comment-input-row .input {
+  flex: 1; font-size: 11px;
+}
+
+.comment-input-row .btn-primary {
+  font-size: 10px; padding: 4px 10px;
+}
 
 @media (max-width: 768px) {
   .sidebar {
@@ -500,8 +552,12 @@ select.input { cursor: pointer; appearance: none; }
     display: block;
   }
 
+  .mobile-theme-strip {
+    display: flex;
+  }
+
   .main-content {
-    padding: 12px 12px 60px;
+    padding: 8px 10px 56px;
   }
 
   .board-columns {
@@ -520,26 +576,31 @@ select.input { cursor: pointer; appearance: none; }
   .board-header, .kb-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 4px;
   }
 
   .filters {
-    gap: 3px;
+    gap: 2px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
   }
 
   .filter-chip {
     padding: 2px 6px;
     font-size: 9px;
+    flex-shrink: 0;
   }
 
   .filter-sep {
     display: none;
   }
 
+  /* KB: fixed file list at top, note below */
   .kb-layout {
     flex-direction: column;
     height: auto;
-    gap: 12px;
+    gap: 10px;
   }
 
   .kb-files {
@@ -547,22 +608,30 @@ select.input { cursor: pointer; appearance: none; }
     min-width: 0;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 0 0 8px;
+    padding: 0 0 6px;
     display: flex;
-    flex-wrap: wrap;
     gap: 4px;
     overflow-x: auto;
+    flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 5;
+    padding-top: 4px;
   }
 
   .kb-files-title {
-    width: 100%;
-    margin-bottom: 2px;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    margin-right: 4px;
+    align-self: center;
   }
 
   .kb-file-item {
     font-size: 10px;
     white-space: nowrap;
-    padding: 2px 6px;
+    padding: 3px 8px;
+    flex-shrink: 0;
   }
 
   .kb-note-panel {
@@ -573,16 +642,25 @@ select.input { cursor: pointer; appearance: none; }
     grid-template-columns: 1fr;
   }
 
+  /* Full-height modal on mobile */
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
   .task-form, .note-editor {
     max-width: 100%;
     margin: 0;
-    max-height: calc(100vh - 20px);
-    border-radius: var(--radius);
+    max-height: 100vh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
   }
 
-  .modal-overlay {
-    padding: 8px;
-    align-items: flex-end;
+  .task-form .form-body,
+  .note-editor .editor-content {
+    flex: 1;
+    overflow-y: auto;
   }
 
   .editor-header {
@@ -590,7 +668,7 @@ select.input { cursor: pointer; appearance: none; }
   }
 
   .theme-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(7, 1fr);
   }
 }
 

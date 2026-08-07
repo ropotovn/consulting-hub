@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoreProvider, useStore } from './hooks/useStore';
-import { ThemeProvider } from './hooks/useTheme';
+import { ThemeProvider, useTheme } from './hooks/useTheme';
 import { useTelegram } from './hooks/useTelegram';
 import Sidebar from './components/Sidebar';
 import TaskBoard from './components/TaskBoard';
@@ -12,6 +12,7 @@ import './App.css';
 const AppInner: React.FC = () => {
   const { view, showTaskForm, editingNoteId, setView } = useStore();
   const { isReady } = useTelegram();
+  const { theme, setTheme, themes } = useTheme();
 
   if (!isReady) {
     return (
@@ -25,6 +26,18 @@ const AppInner: React.FC = () => {
     <div className="app">
       <Sidebar />
       <main className="main-content">
+        {/* Mobile theme strip */}
+        <div className="mobile-theme-strip">
+          {themes.map(t => (
+            <div
+              key={t.id}
+              className={`theme-dot ${theme.id === t.id ? 'active' : ''}`}
+              style={{ background: t.bg, borderColor: t.border }}
+              onClick={() => setTheme(t.id)}
+              title={t.name}
+            />
+          ))}
+        </div>
         {view === 'tasks' ? <TaskBoard /> : <KnowledgeBase />}
       </main>
       {showTaskForm && <TaskForm />}

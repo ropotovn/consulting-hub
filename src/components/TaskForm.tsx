@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
 import { TAG_LABELS, PRIORITY_LABELS, STATUS_LABELS, ASSIGNEE_LABELS } from '../types';
-import type { TaskStatus, Priority, TaskTag, Assignee } from '../types';
+import type { TaskStatus, Priority, TaskTag, Assignee, TaskComment } from '../types';
 
 function newId(): string {
   return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -17,6 +17,8 @@ const TaskForm: React.FC = () => {
   const [tags, setTags] = useState<TaskTag[]>([]);
   const [assignee, setAssignee] = useState<Assignee>('nikita');
   const [deadline, setDeadline] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
 
   useEffect(() => {
     if (editingTask) {
@@ -27,14 +29,29 @@ const TaskForm: React.FC = () => {
       setTags(editingTask.tags);
       setAssignee(editingTask.assignee);
       setDeadline(editingTask.deadline?.split('T')[0] || '');
+      setTaskComments(editingTask.comments || []);
     } else {
       setTitle(''); setDescription(''); setStatus('todo'); setPriority('soon');
       setTags([]); setAssignee('nikita'); setDeadline('');
+      setTaskComments([]);
     }
   }, [editingTask]);
 
   const toggleTag = (tag: TaskTag) => {
     setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const addComment = () => {
+    if (!commentText.trim()) return;
+    const comment: TaskComment = {
+      id: 'c' + Date.now().toString(36),
+      author: assignee,
+      authorName: ASSIGNEE_LABELS[assignee],
+      text: commentText.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    setTaskComments(prev => [...prev, comment]);
+    setCommentText('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +62,7 @@ const TaskForm: React.FC = () => {
       updateTask(editingTask.id, {
         title: title.trim(), description: description.trim(),
         status, priority, tags, assignee,
-        deadline: deadline || null,
+        deadline: deadline || null, comments: taskComments,
       });
     } else {
       addTask({
@@ -53,6 +70,7 @@ const TaskForm: React.FC = () => {
         status, priority, tags, assignee,
         deadline: deadline || null,
         createdAt: new Date().toISOString(), createdBy: 'user',
+        comments: [],
       });
     }
     handleClose();
@@ -110,6 +128,35 @@ const TaskForm: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {editingTask && (
+            <div className="comments-section">
+              <div className="comments-title">Comments</div>
+              {taskComments.map(c => (
+                <div key={c.id} className="comment-item">
+                  <div className="comment-author">
+                    {c.authorName} · {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  <div className="comment-text">{c.text}</div>
+                </div>
+              ))}
+              {taskComments.length === 0 && (
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '4px 0', fontFamily: 'var(--font-mono)' }}>
+                  No comments yet
+                </div>
+              )}
+              <div className="comment-input-row">
+                <input
+                  className="input"
+                  placeholder="Add comment..."
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addComment(); } }}
+                />
+                <button type="button" className="btn-primary" onClick={addComment}>Send</button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="form-footer">

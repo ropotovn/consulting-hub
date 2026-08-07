@@ -3,6 +3,14 @@ export type Priority = 'now' | 'soon' | 'later';
 export type TaskTag = 'product' | 'marketing' | 'tech' | 'legal' | 'finance' | 'other';
 export type Assignee = 'nikita' | 'sanya';
 
+export interface TaskComment {
+  id: string;
+  author: Assignee;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -15,6 +23,7 @@ export interface Task {
   createdAt: string;
   createdBy: 'agent' | 'user';
   telegramMsgId?: number;
+  comments: TaskComment[];
 }
 
 export interface Note {

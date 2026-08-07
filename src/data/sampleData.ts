@@ -12,6 +12,7 @@ export const sampleTasks: Task[] = [
     deadline: '2026-08-10',
     createdAt: '2026-08-05T10:00:00Z',
     createdBy: 'agent',
+    comments: [],
   },
   {
     id: 't2',
@@ -24,6 +25,7 @@ export const sampleTasks: Task[] = [
     deadline: '2026-08-15',
     createdAt: '2026-08-06T12:00:00Z',
     createdBy: 'user',
+    comments: [],
   },
   {
     id: 't3',
@@ -36,6 +38,7 @@ export const sampleTasks: Task[] = [
     deadline: '2026-08-18',
     createdAt: '2026-08-07T09:00:00Z',
     createdBy: 'agent',
+    comments: [],
   },
   {
     id: 't4',
@@ -48,6 +51,7 @@ export const sampleTasks: Task[] = [
     deadline: '2026-08-25',
     createdAt: '2026-08-07T10:00:00Z',
     createdBy: 'user',
+    comments: [],
   },
   {
     id: 't5',
@@ -60,6 +64,7 @@ export const sampleTasks: Task[] = [
     deadline: '2026-08-12',
     createdAt: '2026-08-06T08:00:00Z',
     createdBy: 'agent',
+    comments: [],
   },
   {
     id: 't6',
@@ -72,6 +77,7 @@ export const sampleTasks: Task[] = [
     deadline: null,
     createdAt: '2026-08-07T11:00:00Z',
     createdBy: 'agent',
+    comments: [],
   },
   {
     id: 't7',
@@ -84,6 +90,7 @@ export const sampleTasks: Task[] = [
     deadline: '2026-08-20',
     createdAt: '2026-08-07T12:00:00Z',
     createdBy: 'user',
+    comments: [],
   },
 ];
 
