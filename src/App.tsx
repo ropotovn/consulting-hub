@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { StoreProvider, useStore } from './hooks/useStore';
 import { ThemeProvider, useTheme } from './hooks/useTheme';
 import { useTelegram } from './hooks/useTelegram';
@@ -7,8 +7,9 @@ import TaskBoard from './components/TaskBoard';
 import TaskForm from './components/TaskForm';
 import KnowledgeBase from './components/KnowledgeBase';
 import NoteEdit from './components/NoteEdit';
-import Board from './components/Board';
 import './App.css';
+
+const Board = lazy(() => import('./components/Board'));
 
 const AppInner: React.FC = () => {
   const { view, showTaskForm, editingNoteId, setView } = useStore();
@@ -39,7 +40,11 @@ const AppInner: React.FC = () => {
             />
           ))}
         </div>
-        {view === 'tasks' ? <TaskBoard /> : view === 'kb' ? <KnowledgeBase /> : <Board />}
+        {view === 'tasks' ? <TaskBoard /> : view === 'kb' ? <KnowledgeBase /> : (
+          <Suspense fallback={<div className="loading-screen">...</div>}>
+            <Board />
+          </Suspense>
+        )}
       </main>
       {showTaskForm && <TaskForm />}
       {editingNoteId && <NoteEdit />}
