@@ -219,7 +219,7 @@ body {
   transform: scale(0.97);
 }
 .task-card.snapped {
-  animation: snapIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: snapIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .task-card.snapped::after {
@@ -228,32 +228,27 @@ body {
   inset: -4px;
   border-radius: inherit;
   pointer-events: none;
-  animation: dustBurst 0.5s ease-out forwards;
+  animation: dustBurst 0.35s ease-out forwards;
 }
 
 @keyframes snapIn {
-  0% { transform: scale(0.93); opacity: 0.6; }
-  40% { transform: scale(1.04); }
-  70% { transform: scale(0.98); }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(0.96); }
+  50% { transform: scale(1.015); }
+  100% { transform: scale(1); }
 }
 
 @keyframes dustBurst {
   0% {
     box-shadow:
-      -2px -2px 0 0 var(--text), 3px -1px 0 0 var(--text-muted),
-      4px 2px 0 0 var(--border), -3px 3px 0 0 var(--border),
-      0px -4px 0 0 var(--text-secondary), 5px 0px 0 0 var(--border);
-    opacity: 1;
-    transform: scale(1);
+      -1px -1px 0 0 var(--text-muted), 2px 0px 0 0 var(--border),
+      0px 2px 0 0 var(--border), -2px 1px 0 0 var(--text-muted);
+    opacity: 0.6;
   }
   100% {
     box-shadow:
-      -8px -10px 0 0 transparent, 12px -6px 0 0 transparent,
-      14px 8px 0 0 transparent, -10px 12px 0 0 transparent,
-      0px -14px 0 0 transparent, 18px 2px 0 0 transparent;
+      -3px -5px 0 0 transparent, 6px -2px 0 0 transparent,
+      1px 6px 0 0 transparent, -5px 4px 0 0 transparent;
     opacity: 0;
-    transform: scale(1.3);
   }
 }
 
