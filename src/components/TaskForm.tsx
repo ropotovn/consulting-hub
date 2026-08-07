@@ -10,7 +10,7 @@ function newId(): string {
 
 const TaskForm: React.FC = () => {
   const { addTask, updateTask, deleteTask, editingTask, setShowTaskForm, setEditingTask } = useStore();
-  const { currentUser, currentUserName } = useTelegram();
+  const { currentUser } = useTelegram();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -21,6 +21,12 @@ const TaskForm: React.FC = () => {
   const [deadline, setDeadline] = useState('');
   const [commentText, setCommentText] = useState('');
   const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
+  const [commentAs, setCommentAs] = useState<Assignee>(currentUser || 'nikita');
+
+  // Sync commentAs when Telegram user detected
+  useEffect(() => {
+    if (currentUser) setCommentAs(currentUser);
+  }, [currentUser]);
 
   useEffect(() => {
     if (editingTask) {
@@ -45,8 +51,8 @@ const TaskForm: React.FC = () => {
 
   const addComment = () => {
     if (!commentText.trim()) return;
-    const author: Assignee = currentUser || assignee;
-    const authorName = currentUserName || ASSIGNEE_LABELS[assignee];
+    const author = commentAs;
+    const authorName = ASSIGNEE_LABELS[commentAs];
     const comment: TaskComment = {
       id: 'c' + Date.now().toString(36),
       author,
@@ -137,11 +143,25 @@ const TaskForm: React.FC = () => {
             <div className="comments-section">
               <div className="comments-title">
                 Comments
-                {currentUserName && (
-                  <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
-                    as {currentUserName}
-                  </span>
-                )}
+                <span style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
+                  <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>as</span>
+                  <button
+                    type="button"
+                    className={`filter-chip ${commentAs === 'nikita' ? 'active' : ''}`}
+                    onClick={() => setCommentAs('nikita')}
+                    style={{ fontSize: 9, padding: '1px 6px' }}
+                  >
+                    N
+                  </button>
+                  <button
+                    type="button"
+                    className={`filter-chip ${commentAs === 'sanya' ? 'active' : ''}`}
+                    onClick={() => setCommentAs('sanya')}
+                    style={{ fontSize: 9, padding: '1px 6px' }}
+                  >
+                    S
+                  </button>
+                </span>
               </div>
               {taskComments.map(c => (
                 <div key={c.id} className="comment-item">
