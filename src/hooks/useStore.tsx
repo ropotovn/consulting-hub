@@ -4,6 +4,8 @@ import { sampleTasks, sampleNotes } from '../data/sampleData';
 
 const STORAGE_KEY_TASKS = 'consulting_hub_tasks';
 const STORAGE_KEY_NOTES = 'consulting_hub_notes';
+const STORAGE_KEY_SYNCED = 'consulting_hub_synced';
+const DATA_BASE = import.meta.env.BASE_URL + 'data/';
 
 interface Store {
   tasks: Task[];
@@ -61,6 +63,48 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // Sync with remote data from GitHub repo
+  useEffect(() => {
+    const syncedVersion = localStorage.getItem(STORAGE_KEY_SYNCED);
+    
+    async function sync() {
+      try {
+        const [tasksRes, notesRes] = await Promise.all([
+          fetch(DATA_BASE + 'tasks.json'),
+          fetch(DATA_BASE + 'notes.json'),
+        ]);
+        
+        const [remoteTasks, remoteNotes] = await Promise.all([
+          tasksRes.json(),
+          notesRes.json(),
+        ]);
+
+        if (!syncedVersion) {
+          // First load: use remote data as source of truth
+          setTasks(remoteTasks);
+          setNotes(remoteNotes);
+          localStorage.setItem(STORAGE_KEY_SYNCED, Date.now().toString());
+        } else {
+          // Already have local data — merge remote additions
+          setTasks(prev => {
+            const localIds = new Set(prev.map(t => t.id));
+            const newTasks = remoteTasks.filter((t: Task) => !localIds.has(t.id));
+            return newTasks.length > 0 ? [...newTasks, ...prev] : prev;
+          });
+          setNotes(prev => {
+            const localIds = new Set(prev.map(n => n.id));
+            const newNotes = remoteNotes.filter((n: Note) => !localIds.has(n.id));
+            return newNotes.length > 0 ? [...newNotes, ...prev] : prev;
+          });
+        }
+      } catch {
+        // Offline or remote unavailable — use local data
+      }
+    }
+
+    sync();
+  }, []);
 
   useEffect(() => { saveToStorage(STORAGE_KEY_TASKS, tasks); }, [tasks]);
   useEffect(() => { saveToStorage(STORAGE_KEY_NOTES, notes); }, [notes]);

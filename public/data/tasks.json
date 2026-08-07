@@ -1,0 +1,86 @@
+[
+  {
+    "id": "t1",
+    "title": "Определить MVP-фичи для стартапа",
+    "description": "Нужно сесть и расписать минимальный набор фич, с которым можно выходить к первым пользователям. Отсечь всё лишнее.",
+    "status": "done",
+    "priority": "now",
+    "tags": ["product"],
+    "assignee": "alex",
+    "deadline": "2026-08-10",
+    "createdAt": "2026-08-05T10:00:00Z",
+    "createdBy": "agent"
+  },
+  {
+    "id": "t2",
+    "title": "Собрать лендинг на конструкторе",
+    "description": "Быстрый лендинг на Tilda/Webflow для проверки спроса. 3 экрана: проблема, решение, CTA.",
+    "status": "doing",
+    "priority": "now",
+    "tags": ["marketing", "product"],
+    "assignee": "sanya",
+    "deadline": "2026-08-15",
+    "createdAt": "2026-08-06T12:00:00Z",
+    "createdBy": "user"
+  },
+  {
+    "id": "t3",
+    "title": "Провести 5 проблемных интервью",
+    "description": "Найти и опросить 5 потенциальных пользователей. Сфокусироваться на боли, а не на решении.",
+    "status": "todo",
+    "priority": "now",
+    "tags": ["product", "marketing"],
+    "assignee": "alex",
+    "deadline": "2026-08-18",
+    "createdAt": "2026-08-07T09:00:00Z",
+    "createdBy": "agent"
+  },
+  {
+    "id": "t4",
+    "title": "Разобраться с юрлицом и налогами",
+    "description": "ИП или ООО? УСН или патенты? Нужна консультация бухгалтера.",
+    "status": "todo",
+    "priority": "soon",
+    "tags": ["legal", "finance"],
+    "assignee": "sanya",
+    "deadline": "2026-08-25",
+    "createdAt": "2026-08-07T10:00:00Z",
+    "createdBy": "user"
+  },
+  {
+    "id": "t5",
+    "title": "Накидать структуру базы знаний",
+    "description": "Какие разделы нужны: продукт, рынок, конкуренты, метрики, гипотезы. Сделать каркас.",
+    "status": "doing",
+    "priority": "soon",
+    "tags": ["product"],
+    "assignee": "alex",
+    "deadline": "2026-08-12",
+    "createdAt": "2026-08-06T08:00:00Z",
+    "createdBy": "agent"
+  },
+  {
+    "id": "t6",
+    "title": "Сравнить аналоги: ценовой анализ",
+    "description": "Собрать 5-7 конкурентов, расписать их цены и модели монетизации. Таблица.",
+    "status": "todo",
+    "priority": "later",
+    "tags": ["marketing", "product"],
+    "assignee": "sanya",
+    "deadline": null,
+    "createdAt": "2026-08-07T11:00:00Z",
+    "createdBy": "agent"
+  },
+  {
+    "id": "t7",
+    "title": "Выбрать стек для MVP",
+    "description": "Фронт, бэк, хостинг, база. Чтобы быстро и не переписывать через месяц.",
+    "status": "todo",
+    "priority": "soon",
+    "tags": ["tech"],
+    "assignee": "alex",
+    "deadline": "2026-08-20",
+    "createdAt": "2026-08-07T12:00:00Z",
+    "createdBy": "user"
+  }
+]
