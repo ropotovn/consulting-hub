@@ -42,6 +42,7 @@ const TaskBoard: React.FC = () => {
   const { tasks, filterStatus, filterPriority, filterAssignee, updateTask } = store;
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<TaskStatus | null>(null);
+  const [snappedId, setSnappedId] = useState<string | null>(null);
 
   const filtered = tasks.filter(t => {
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
@@ -87,6 +88,8 @@ const TaskBoard: React.FC = () => {
     setDragOver(null);
     if (dragId) {
       updateTask(dragId, { status });
+      setSnappedId(dragId);
+      setTimeout(() => setSnappedId(null), 500);
     }
     setDragId(null);
   }, [dragId, updateTask]);
@@ -119,7 +122,7 @@ const TaskBoard: React.FC = () => {
               {grouped[status].map(task => (
                 <div
                   key={task.id}
-                  className={`task-card ${dragId === task.id ? 'dragging' : ''}`}
+                  className={`task-card ${dragId === task.id ? 'dragging' : ''} ${snappedId === task.id ? 'snapped' : ''}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
                   onDragEnd={handleDragEnd}
