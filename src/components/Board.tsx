@@ -77,11 +77,11 @@ const Board = React.memo(function Board() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [drawPreview, setDrawPreview] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [arrowPreview, setArrowPreview] = useState<{ d: string } | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<{ startX: number; startY: number } | null>(null);
   const arrowRef = useRef<{ fromId: string; fromSide: ConnectorSide; x1: number; y1: number } | null>(null);
-  const arrowPathRef = useRef<string>('');
   const blocksRef = useRef(blocks);
   blocksRef.current = blocks;
   const connsRef = useRef(connections);
@@ -116,6 +116,13 @@ const Board = React.memo(function Board() {
       if (!drawRef.current) return;
       const { x, y } = canvasXY(ev.clientX, ev.clientY);
       const s = drawRef.current;
+      const w = Math.abs(x - s.startX);
+      const h = Math.abs(y - s.startY);
+      drawRef.current = null;
+      setDrawPreview(null);
+
+      // Require minimum drag distance to create a block
+      if (w < 10 && h < 10) return;
       const minX = Math.min(s.startX, x), minY = Math.min(s.startY, y);
       const block: BoardBlock = {
         id: newId(), x: minX, y: minY, text: '',
@@ -123,7 +130,6 @@ const Board = React.memo(function Board() {
         width: Math.max(60, Math.abs(x - s.startX)), height: Math.max(50, Math.abs(y - s.startY)),
       };
       persistBlocks([...blocksRef.current, block]);
-      setDrawPreview(null); drawRef.current = null;
       setEditingId(block.id); setEditText('');
     };
     document.addEventListener('mousemove', handleMove);
@@ -138,12 +144,12 @@ const Board = React.memo(function Board() {
     if (!block) return;
     const p = connectorXY(block, side);
     arrowRef.current = { fromId: blockId, fromSide: side, x1: p.x, y1: p.y };
-    arrowPathRef.current = `M ${p.x} ${p.y}`;
+    setArrowPreview({ d: `M ${p.x} ${p.y}` });
 
     const handleMove = (ev: MouseEvent) => {
       if (!arrowRef.current) return;
       const ep = canvasXY(ev.clientX, ev.clientY);
-      arrowPathRef.current = orthoPath(p.x, p.y, ep.x, ep.y, side, 'right');
+      setArrowPreview({ d: orthoPath(p.x, p.y, ep.x, ep.y, side, 'right') });
     };
 
     const handleUp = (ev: MouseEvent) => {
@@ -167,6 +173,7 @@ const Board = React.memo(function Board() {
         }
       }
       arrowRef.current = null;
+      setArrowPreview(null);
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleUp);
     };
@@ -255,8 +262,8 @@ const Board = React.memo(function Board() {
               </g>
             );
           })}
-          {arrowRef.current && (
-            <path d={arrowPathRef.current} className="board-arrow-preview" />
+          {arrowRef.current && arrowPreview && (
+            <path d={arrowPreview.d} className="board-arrow-preview" />
           )}
         </svg>
 
