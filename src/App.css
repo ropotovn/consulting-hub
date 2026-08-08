@@ -355,6 +355,11 @@ body {
 .card-priority-label.soon { color: #f59e0b; }
 .card-priority-label.later { color: #94a3b8; }
 
+/* Done tasks: green stripe + green dot */
+.task-card.status-done {
+  border-left-color: #22c55e !important;
+}
+
 /* Sort controls */
 .sort-controls {
   display: flex; gap: 4px;
