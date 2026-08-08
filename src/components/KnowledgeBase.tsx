@@ -100,6 +100,16 @@ const KnowledgeBase: React.FC = () => {
   useEffect(() => {
     if (!contentRef.current || !selectedNote) return;
     const comments = selectedNote.comments || [];
+
+    // Remove existing highlights before applying new ones
+    contentRef.current.querySelectorAll('mark.kb-highlight').forEach(m => {
+      const parent = m.parentNode;
+      if (parent) {
+        while (m.firstChild) parent.insertBefore(m.firstChild, m);
+        parent.removeChild(m);
+      }
+    });
+
     if (!comments.length) return;
 
     const walker = document.createTreeWalker(contentRef.current, NodeFilter.SHOW_TEXT);
