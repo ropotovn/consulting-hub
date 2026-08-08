@@ -81,6 +81,7 @@ const Board = React.memo(function Board() {
   const [panY, setPanY] = useState(0);
   const [tool, setTool] = useState<'select' | 'draw' | 'arrow' | 'rect' | 'circle'>('select');
   const [blockColor, setBlockColor] = useState('#ffffff');
+  const [arrowStyle, setArrowStyle] = useState<'none' | 'end' | 'both'>('end');
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -93,6 +94,8 @@ const Board = React.memo(function Board() {
   colorRef.current = blockColor;
   const toolRef = useRef(tool);
   toolRef.current = tool;
+  const arrowStyleRef = useRef(arrowStyle);
+  arrowStyleRef.current = arrowStyle;
 
   const persistBlocks = (b: BoardBlock[]) => { setBlocks(b); save(STORAGE_BLOCKS, b); };
   const persistConns = (c: BoardConnection[]) => { setConnections(c); save(STORAGE_CONNS, c); };
@@ -231,7 +234,7 @@ const Board = React.memo(function Board() {
           (c.fromId === target.id && c.toId === arrowRef.current!.fromId)
         );
         if (!dup) {
-          persistConns([...cs, { id: 'c' + newId(), fromId: arrowRef.current!.fromId, fromSide: side, toId: target.id, toSide: targetSide }]);
+          persistConns([...cs, { id: 'c' + newId(), fromId: arrowRef.current!.fromId, fromSide: side, toId: target.id, toSide: targetSide, arrowStyle: arrowStyleRef.current }]);
         }
       }
       arrowRef.current = null;
@@ -311,7 +314,17 @@ const Board = React.memo(function Board() {
           <button className={`board-tool ${tool === 'rect' ? 'active' : ''}`} onClick={() => setTool('rect')} title="Rectangle">◻</button>
           <button className={`board-tool ${tool === 'circle' ? 'active' : ''}`} onClick={() => setTool('circle')} title="Circle">○</button>
           <span className="board-tool-sep" />
-          <button className={`board-tool ${tool === 'arrow' ? 'active' : ''}`} onClick={() => setTool('arrow')} title="Arrow mode">→</button>
+          <button
+            className={`board-tool ${tool === 'arrow' ? 'active' : ''}`}
+            onClick={() => {
+              setTool('arrow');
+              const next = arrowStyle === 'none' ? 'end' : arrowStyle === 'end' ? 'both' : 'none';
+              setArrowStyle(next);
+            }}
+            title={`Arrow: ${arrowStyle}`}
+          >
+            {arrowStyle === 'none' ? '—' : arrowStyle === 'end' ? '→' : '⇄'}
+          </button>
           <span className="board-tool-sep" />
           {COLORS.slice(0, 6).map(c => (
             <button
@@ -336,7 +349,12 @@ const Board = React.memo(function Board() {
             return (
               <g key={conn.id}>
                 <path d={path} className="board-arrow-path" />
-                <circle cx={p2.x} cy={p2.y} r={3.5} className="board-arrow-head" />
+                {conn.arrowStyle !== 'none' && (
+                  <circle cx={p2.x} cy={p2.y} r={3.5} className="board-arrow-head" />
+                )}
+                {conn.arrowStyle === 'both' && (
+                  <circle cx={p1.x} cy={p1.y} r={3.5} className="board-arrow-head" />
+                )}
                 <path d={path} className="board-arrow-hit" onClick={() => deleteConnection(conn.id)} />
               </g>
             );

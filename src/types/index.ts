@@ -95,4 +95,5 @@ export interface BoardConnection {
   fromSide: ConnectorSide;
   toId: string;
   toSide: ConnectorSide;
+  arrowStyle?: 'none' | 'end' | 'both';
 }
