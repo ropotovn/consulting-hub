@@ -44,6 +44,8 @@ const TaskBoard: React.FC = () => {
     touchRef.current = null;
   };
 
+  const [sortBy, setSortBy] = useState<'priority-desc' | 'priority-asc' | 'deadline' | 'none'>('none');
+
   const filtered = tasks.filter(t => {
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
     if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
@@ -51,10 +53,24 @@ const TaskBoard: React.FC = () => {
     return true;
   });
 
-  const grouped: Record<TaskStatus, typeof filtered> = {
-    todo: filtered.filter(t => t.status === 'todo'),
-    doing: filtered.filter(t => t.status === 'doing'),
-    done: filtered.filter(t => t.status === 'done'),
+  // Sort
+  const sorted = [...filtered].sort((a, b) => {
+    const pOrder: Record<string, number> = { now: 0, soon: 1, later: 2 };
+    if (sortBy === 'priority-desc') return pOrder[a.priority] - pOrder[b.priority];
+    if (sortBy === 'priority-asc') return pOrder[b.priority] - pOrder[a.priority];
+    if (sortBy === 'deadline') {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    }
+    return 0;
+  });
+
+  const grouped: Record<TaskStatus, typeof sorted> = {
+    todo: sorted.filter(t => t.status === 'todo'),
+    doing: sorted.filter(t => t.status === 'doing'),
+    done: sorted.filter(t => t.status === 'done'),
   };
 
   // Desktop drag
@@ -196,6 +212,14 @@ const TaskBoard: React.FC = () => {
     <div className="task-board">
       <div className="board-header">
         <h2>Tasks</h2>
+        <div className="sort-controls">
+          <button className={`filter-chip ${sortBy === 'priority-desc' ? 'active' : ''}`} onClick={() => setSortBy(sortBy === 'priority-desc' ? 'none' : 'priority-desc')}>
+            Priority ↓
+          </button>
+          <button className={`filter-chip ${sortBy === 'deadline' ? 'active' : ''}`} onClick={() => setSortBy(sortBy === 'deadline' ? 'none' : 'deadline')}>
+            Deadline
+          </button>
+        </div>
         <button className="btn-primary" onClick={() => { store.setEditingTask(null); store.setShowTaskForm(true); }}>+ New task</button>
       </div>
 
@@ -219,7 +243,7 @@ const TaskBoard: React.FC = () => {
               {grouped[status].map(task => (
                 <div
                   key={task.id}
-                  className={`task-card ${dragId === task.id ? 'dragging' : ''} ${snappedId === task.id ? 'snapped' : ''}`}
+                  className={`task-card ${dragId === task.id ? 'dragging' : ''} ${snappedId === task.id ? 'snapped' : ''} priority-${task.priority}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
                   onDragEnd={handleDragEnd}
