@@ -505,6 +505,11 @@ select.input { cursor: pointer; appearance: none; }
   padding: 4px 6px; margin-bottom: 4px;
   background: var(--bg-secondary); border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
+  transition: border-color 0.15s;
+}
+.kb-comment-hover {
+  border-color: var(--text);
+  background: var(--bg-hover);
 }
 
 .kb-comment-author {

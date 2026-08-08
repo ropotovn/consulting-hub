@@ -49,6 +49,7 @@ const KnowledgeBase: React.FC = () => {
   const [selection, setSelection] = useState<{ text: string; start: number; end: number } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
+  const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const backlinks = selectedNoteId ? notes.filter(n => n.links.includes(selectedNoteId)) : [];
@@ -111,6 +112,8 @@ const KnowledgeBase: React.FC = () => {
             const mark = document.createElement('mark');
             mark.className = 'kb-highlight';
             mark.dataset.comment = c.id;
+            mark.onmouseenter = () => setHoveredCommentId(c.id);
+            mark.onmouseleave = () => setHoveredCommentId(null);
             try { range.surroundContents(mark); } catch {}
             break;
           }
@@ -139,7 +142,7 @@ const KnowledgeBase: React.FC = () => {
         ))}
       </div>
 
-      <div className="kb-note-panel" onMouseUp={handleTextSelection} onKeyUp={handleTextSelection}>
+      <div className="kb-note-panel" onMouseUp={handleTextSelection}>
         {selectedNote ? (
           <div className="kb-note-layout">
             <div className="kb-note-main">
@@ -181,7 +184,9 @@ const KnowledgeBase: React.FC = () => {
               <div className="kb-refs-section" style={{ marginTop: 8 }}>
                 <div className="kb-refs-title">Comments {(selectedNote.comments || []).length}</div>
                 {(selectedNote.comments || []).map(c => (
-                  <div key={c.id} className="kb-comment-item">
+                  <div key={c.id} className={`kb-comment-item ${hoveredCommentId === c.id ? 'kb-comment-hover' : ''}`}
+                    onMouseEnter={() => setHoveredCommentId(c.id)}
+                    onMouseLeave={() => setHoveredCommentId(null)}>
                     <div className="kb-comment-anchor">«{c.selectedText.slice(0, 40)}{c.selectedText.length > 40 ? '…' : ''}»</div>
                     {editingCommentId === c.id ? (
                       <div>
