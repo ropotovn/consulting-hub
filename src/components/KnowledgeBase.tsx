@@ -177,12 +177,12 @@ const KnowledgeBase: React.FC = () => {
           const lastAuthor = commentCount > 0 ? note.comments![commentCount - 1].author : null;
           return (
           <div key={note.id} className={`kb-file-item ${selectedNoteId === note.id ? 'active' : ''}`} onClick={() => setSelectedNoteId(note.id)}>
-            <span className="kb-file-icon">{note.pinned ? '📌' : '#'}</span>
+            <span className="kb-file-icon">{note.pinned ? '◆' : '·'}</span>
             {note.title}
             {isNew && <span className="kb-badge-new">new</span>}
             {commentCount > 0 && <span className="kb-badge-comment" title={`${commentCount} comment${commentCount > 1 ? 's' : ''}${lastAuthor ? ' by ' + lastAuthor : ''}`}>{commentCount}</span>}
             <button className="kb-pin-btn" onClick={(e) => { e.stopPropagation(); togglePinNote(note.id); }} title={note.pinned ? 'Unpin' : 'Pin'}>
-              {note.pinned ? '✕' : '📌'}
+              {note.pinned ? 'unpin' : 'pin'}
             </button>
           </div>
         );})}
