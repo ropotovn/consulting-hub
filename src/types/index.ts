@@ -41,7 +41,11 @@ export interface NoteComment {
   id: string;
   author: string;
   text: string;
+  selectedText: string;
+  startOffset: number;
+  endOffset: number;
   createdAt: string;
+  editedAt?: string;
 }
 
 export const TAG_LABELS: Record<TaskTag, string> = {

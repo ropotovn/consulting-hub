@@ -19,6 +19,8 @@ interface Store {
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
   addNoteComment: (noteId: string, comment: NoteComment) => void;
+  updateNoteComment: (noteId: string, commentId: string, text: string) => void;
+  deleteNoteComment: (noteId: string, commentId: string) => void;
   // filters
   filterStatus: TaskStatus | 'all';
   setFilterStatus: (s: TaskStatus | 'all') => void;
@@ -123,12 +125,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setNotes(prev => prev.filter(n => n.id !== id)), []);
   const addNoteComment = useCallback((noteId: string, comment: NoteComment) =>
     setNotes(prev => prev.map(n => n.id === noteId ? { ...n, comments: [...(n.comments || []), comment] } : n)), []);
+  const updateNoteComment = useCallback((noteId: string, commentId: string, text: string) =>
+    setNotes(prev => prev.map(n => n.id === noteId ? {
+      ...n, comments: (n.comments || []).map(c => c.id === commentId ? { ...c, text, editedAt: new Date().toISOString() } : c)
+    } : n)), []);
+  const deleteNoteComment = useCallback((noteId: string, commentId: string) =>
+    setNotes(prev => prev.map(n => n.id === noteId ? {
+      ...n, comments: (n.comments || []).filter(c => c.id !== commentId)
+    } : n)), []);
 
   return (
     <StoreContext.Provider value={{
       tasks, notes, view, setView,
       addTask, updateTask, deleteTask,
-      addNote, updateNote, deleteNote, addNoteComment,
+      addNote, updateNote, deleteNote, addNoteComment, updateNoteComment, deleteNoteComment,
       filterStatus, setFilterStatus,
       filterPriority, setFilterPriority,
       filterAssignee, setFilterAssignee,

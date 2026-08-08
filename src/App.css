@@ -516,6 +516,29 @@ select.input { cursor: pointer; appearance: none; }
   font-size: 10px; color: var(--text); line-height: 1.4;
 }
 
+.kb-comment-anchor {
+  font-size: 9px; color: var(--text-muted); font-style: italic;
+  margin-bottom: 3px; font-family: var(--font-mono);
+  background: var(--accent-dim); padding: 1px 4px; border-radius: 2px;
+  display: inline-block;
+}
+
+.kb-comment-form {
+  margin-top: 8px; padding: 8px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+}
+
+mark.kb-highlight {
+  background: var(--accent-dim);
+  cursor: pointer; border-radius: 2px;
+  padding: 0 1px;
+}
+mark.kb-highlight:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
 .kb-note-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
 }
