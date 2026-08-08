@@ -1,7 +1,38 @@
 import React from 'react';
 import { useStore } from '../hooks/useStore';
+import { useTelegram } from '../hooks/useTelegram';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
+const KbCommentInput: React.FC<{ noteId: string }> = ({ noteId }) => {
+  const { addNoteComment } = useStore();
+  const { currentUser } = useTelegram();
+  const [text, setText] = React.useState('');
+
+  const submit = () => {
+    if (!text.trim()) return;
+    addNoteComment(noteId, {
+      id: 'nc' + Date.now().toString(36),
+      author: currentUser === 'nikita' ? 'Никита' : currentUser === 'sanya' ? 'Саня' : '—',
+      text: text.trim(),
+      createdAt: new Date().toISOString(),
+    });
+    setText('');
+  };
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <input
+        className="input"
+        style={{ fontSize: 10, padding: '4px 6px' }}
+        placeholder="Add comment..."
+        value={text}
+        onChange={e => setText(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
+      />
+    </div>
+  );
+};
 
 const KnowledgeBase: React.FC = () => {
   const { notes, selectedNoteId, setSelectedNoteId, setEditingNoteId, deleteNote } = useStore();
@@ -111,6 +142,18 @@ const KnowledgeBase: React.FC = () => {
               {selectedNote.links.length === 0 && backlinks.length === 0 && (
                 <div className="kb-refs-empty">No references yet.<br />Use [[links]] to connect notes.</div>
               )}
+
+              {/* Comments */}
+              <div className="kb-refs-section" style={{ marginTop: 8 }}>
+                <div className="kb-refs-title">Comments</div>
+                {(selectedNote.comments || []).map(c => (
+                  <div key={c.id} className="kb-comment-item">
+                    <div className="kb-comment-author">{c.author}</div>
+                    <div className="kb-comment-text">{c.text}</div>
+                  </div>
+                ))}
+                <KbCommentInput noteId={selectedNote.id} />
+              </div>
             </div>
           </div>
         ) : (

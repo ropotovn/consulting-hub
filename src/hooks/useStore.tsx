@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import type { Task, Note, View, TaskStatus, Priority } from '../types';
+import type { Task, Note, NoteComment, View, TaskStatus, Priority } from '../types';
 import { sampleTasks, sampleNotes } from '../data/sampleData';
 
 const STORAGE_KEY_TASKS = 'consulting_hub_tasks';
@@ -18,6 +18,7 @@ interface Store {
   addNote: (note: Note) => void;
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
+  addNoteComment: (noteId: string, comment: NoteComment) => void;
   // filters
   filterStatus: TaskStatus | 'all';
   setFilterStatus: (s: TaskStatus | 'all') => void;
@@ -120,12 +121,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n)), []);
   const deleteNote = useCallback((id: string) =>
     setNotes(prev => prev.filter(n => n.id !== id)), []);
+  const addNoteComment = useCallback((noteId: string, comment: NoteComment) =>
+    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, comments: [...(n.comments || []), comment] } : n)), []);
 
   return (
     <StoreContext.Provider value={{
       tasks, notes, view, setView,
       addTask, updateTask, deleteTask,
-      addNote, updateNote, deleteNote,
+      addNote, updateNote, deleteNote, addNoteComment,
       filterStatus, setFilterStatus,
       filterPriority, setFilterPriority,
       filterAssignee, setFilterAssignee,

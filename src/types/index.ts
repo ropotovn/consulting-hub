@@ -34,6 +34,14 @@ export interface Note {
   links: string[];
   createdAt: string;
   updatedAt: string;
+  comments: NoteComment[];
+}
+
+export interface NoteComment {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
 }
 
 export const TAG_LABELS: Record<TaskTag, string> = {

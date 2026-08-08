@@ -67,7 +67,7 @@ const NoteEdit: React.FC = () => {
     } else {
       addNote({
         id: newId(), title: title.trim(), content, tags: tagList, links,
-        createdAt: now, updatedAt: now,
+        createdAt: now, updatedAt: now, comments: [],
       });
     }
 

@@ -382,14 +382,35 @@ const Board = React.memo(function Board() {
             const p1 = connectorXY(from, conn.fromSide);
             const p2 = connectorXY(to, conn.toSide);
             const path = bezierPath(p1.x, p1.y, p2.x, p2.y, conn.fromSide, conn.toSide);
+
+            // Compute arrowhead triangle at the end of the bezier
+            const arrowHead = (px: number, py: number, cpx: number, cpy: number, size: number = 6) => {
+              const angle = Math.atan2(py - cpy, px - cpx);
+              const a1 = angle + Math.PI * 0.8;
+              const a2 = angle - Math.PI * 0.8;
+              return `${px + Math.cos(angle) * size},${py + Math.sin(angle) * size} ${px + Math.cos(a1) * size},${py + Math.sin(a1) * size} ${px + Math.cos(a2) * size},${py + Math.sin(a2) * size}`;
+            };
+            // Compute control points for arrowhead direction
+            const dir = (side: 'top' | 'right' | 'bottom' | 'left'): [number, number] => {
+              switch (side) { case 'top': return [0, -1]; case 'bottom': return [0, 1]; case 'left': return [-1, 0]; case 'right': return [1, 0]; }
+            };
+            const [dx1, dy1] = dir(conn.fromSide);
+            const [dx2, dy2] = dir(conn.toSide);
+            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            const offset = Math.max(40, dist * 0.4);
+            const cp2x = p2.x + dx2 * offset;
+            const cp2y = p2.y + dy2 * offset;
+            const cp1x = p1.x + dx1 * offset;
+            const cp1y = p1.y + dy1 * offset;
+
             return (
               <g key={conn.id}>
                 <path d={path} className="board-arrow-path" />
                 {conn.arrowStyle !== 'none' && (
-                  <circle cx={p2.x} cy={p2.y} r={3.5} className="board-arrow-head" />
+                  <polygon points={arrowHead(p2.x, p2.y, cp2x, cp2y)} className="board-arrow-head" />
                 )}
                 {conn.arrowStyle === 'both' && (
-                  <circle cx={p1.x} cy={p1.y} r={3.5} className="board-arrow-head" />
+                  <polygon points={arrowHead(p1.x, p1.y, cp1x, cp1y)} className="board-arrow-head" />
                 )}
                 <path d={path} className="board-arrow-hit" onClick={() => deleteConnection(conn.id)} />
               </g>

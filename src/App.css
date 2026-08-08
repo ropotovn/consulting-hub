@@ -494,6 +494,22 @@ select.input { cursor: pointer; appearance: none; }
   line-height: 1.5;
 }
 
+/* KB Comments */
+.kb-comment-item {
+  padding: 4px 6px; margin-bottom: 4px;
+  background: var(--bg-secondary); border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.kb-comment-author {
+  font-size: 9px; color: var(--text-muted); font-family: var(--font-mono);
+  margin-bottom: 1px;
+}
+
+.kb-comment-text {
+  font-size: 10px; color: var(--text); line-height: 1.4;
+}
+
 .kb-note-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
 }
@@ -865,7 +881,7 @@ select.input { cursor: pointer; appearance: none; }
 }
 
 .board-arrow-head {
-  fill: var(--text-muted);
+  fill: var(--text-secondary);
 }
 
 .board-arrow-hit {
