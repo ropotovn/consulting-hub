@@ -84,6 +84,7 @@ export interface BoardBlock {
   color: string;
   width: number;
   height: number;
+  shape?: 'rect' | 'circle';
 }
 
 export type ConnectorSide = 'top' | 'right' | 'bottom' | 'left';

@@ -89,6 +89,10 @@ const Board = React.memo(function Board() {
   blocksRef.current = blocks;
   const connsRef = useRef(connections);
   connsRef.current = connections;
+  const colorRef = useRef(blockColor);
+  colorRef.current = blockColor;
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
 
   const persistBlocks = (b: BoardBlock[]) => { setBlocks(b); save(STORAGE_BLOCKS, b); };
   const persistConns = (c: BoardConnection[]) => { setConnections(c); save(STORAGE_CONNS, c); };
@@ -176,10 +180,16 @@ const Board = React.memo(function Board() {
       // Require minimum drag distance to create a block
       if (w < 10 && h < 10) return;
       const minX = Math.min(s.startX, x), minY = Math.min(s.startY, y);
+      const bw = Math.max(60, w);
+      const bh = Math.max(50, h);
+      const t = toolRef.current;
+      // Circle: force square dimensions
+      const dim = t === 'circle' ? Math.max(bw, bh) : 0;
       const block: BoardBlock = {
         id: newId(), x: minX, y: minY, text: '',
-        color: blockColor,
-        width: Math.max(60, Math.abs(x - s.startX)), height: Math.max(50, Math.abs(y - s.startY)),
+        color: colorRef.current,
+        width: dim || bw, height: dim || bh,
+        shape: t === 'circle' ? 'circle' : t === 'rect' ? 'rect' : undefined,
       };
       persistBlocks([...blocksRef.current, block]);
       setEditingId(block.id); setEditText('');
@@ -338,7 +348,7 @@ const Board = React.memo(function Board() {
 
         {blocks.map(block => (
           <div key={block.id} className="board-block"
-            style={{ left: block.x, top: block.y, width: block.width, height: block.height, background: block.color }}
+            style={{ left: block.x, top: block.y, width: block.width, height: block.height, background: block.color, borderRadius: block.shape === 'circle' ? '50%' : block.shape === 'rect' ? 'var(--radius-sm)' : undefined }}
             onMouseDown={(e) => handleBlockMouseDown(e, block)}
             onDoubleClick={() => handleDoubleClick(block)}>
             <button className="board-block-delete" onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}>×</button>
