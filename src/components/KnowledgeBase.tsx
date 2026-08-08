@@ -64,15 +64,32 @@ const KnowledgeBase: React.FC = () => {
       return;
     }
     const text = sel.toString().trim();
-    if (!text) { setSelection(null); return; }
+    if (!text || text.length < 2) { setSelection(null); return; }
 
-    const fullText = selectedNote?.content || '';
-    const idx = fullText.indexOf(text);
-    if (idx >= 0) {
-      formActiveRef.current = true;
-      setSelection({ text, start: idx, end: idx + text.length });
+    // Walk text nodes to find offset in raw markdown
+    const range = sel.getRangeAt(0);
+    const walker = document.createTreeWalker(contentRef.current!, NodeFilter.SHOW_TEXT);
+    let charCount = 0;
+    let startOffset = -1;
+    let endOffset = -1;
+    let node: Text | null;
+    while ((node = walker.nextNode() as Text)) {
+      const nodeText = node.textContent || '';
+      if (node === range.startContainer) {
+        startOffset = charCount + range.startOffset;
+      }
+      if (node === range.endContainer) {
+        endOffset = charCount + range.endOffset;
+        break;
+      }
+      charCount += nodeText.length;
     }
-  }, [selectedNote]);
+
+    if (startOffset >= 0 && endOffset > startOffset) {
+      formActiveRef.current = true;
+      setSelection({ text, start: startOffset, end: endOffset });
+    }
+  }, []);
 
   const clearSelection = useCallback(() => {
     setSelection(null);
