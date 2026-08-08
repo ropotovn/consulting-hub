@@ -71,8 +71,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Sync with remote data from GitHub repo
   useEffect(() => {
-    const syncedVersion = localStorage.getItem(STORAGE_KEY_SYNCED);
-    
     async function sync() {
       try {
         const [tasksRes, notesRes] = await Promise.all([
@@ -85,31 +83,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           notesRes.json(),
         ]);
 
-        if (!syncedVersion) {
-          // First load: use remote data as source of truth, filtering deleted
-          const deletedIds: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        const deletedIds: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        const isFirstLoad = !localStorage.getItem(STORAGE_KEY_SYNCED);
+        localStorage.setItem(STORAGE_KEY_SYNCED, Date.now().toString());
+
+        if (isFirstLoad) {
           setTasks(remoteTasks.filter((t: Task) => !deletedIds.includes(t.id)));
           setNotes(remoteNotes.filter((n: Note) => !deletedIds.includes(n.id)));
-          localStorage.setItem(STORAGE_KEY_SYNCED, Date.now().toString());
         } else {
-          // Already have local data — merge remote additions, filter deleted
-          const deletedIds: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+          // Merge: remote wins for new/updated fields, local wins for deletions
           setTasks(prev => {
-            const localIds = new Set(prev.map(t => t.id));
-            const newTasks = remoteTasks.filter((t: Task) => !localIds.has(t.id) && !deletedIds.includes(t.id));
-            return newTasks.length > 0 ? [...newTasks, ...prev] : prev;
+            const localMap = new Map(prev.map(t => [t.id, t]));
+            const merged = remoteTasks
+              .filter((t: Task) => !deletedIds.includes(t.id))
+              .map((t: Task) => {
+                const local = localMap.get(t.id);
+                return local ? { ...t, comments: local.comments, status: local.status } : t;
+              });
+            return merged;
           });
           setNotes(prev => {
-            const localIds = new Set(prev.map(n => n.id));
-            const newNotes = remoteNotes.filter((n: Note) => !localIds.has(n.id) && !deletedIds.includes(n.id));
-            return newNotes.length > 0 ? [...newNotes, ...prev] : prev;
+            const localMap = new Map(prev.map(n => [n.id, n]));
+            const merged = remoteNotes
+              .filter((n: Note) => !deletedIds.includes(n.id))
+              .map((n: Note) => {
+                const local = localMap.get(n.id);
+                // Remote wins for content, local wins for comments + pinned
+                if (local) return { ...n, comments: local.comments || n.comments, pinned: local.pinned ?? n.pinned };
+                return n;
+              });
+            return merged;
           });
         }
-      } catch {
-        // Offline or remote unavailable — use local data
-      }
+      } catch { /* offline */ }
     }
-
     sync();
   }, []);
 

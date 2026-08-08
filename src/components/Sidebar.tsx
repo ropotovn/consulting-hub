@@ -56,6 +56,19 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className="sidebar-footer">
+        <button className="version-btn" onClick={() => {
+          const data = {
+            notes: JSON.parse(localStorage.getItem('consulting_hub_notes') || '[]'),
+            tasks: JSON.parse(localStorage.getItem('consulting_hub_tasks') || '[]'),
+            deleted: JSON.parse(localStorage.getItem('consulting_hub_deleted') || '[]'),
+            boards: JSON.parse(localStorage.getItem('shtab_boards_list') || '["main"]'),
+            exportedAt: new Date().toISOString(),
+          };
+          navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+          alert('Data copied! Send to @ropotov_bot to sync.');
+        }} title="Export all data">
+          Export
+        </button>
         <button className="version-btn" onClick={() => setShowChangelog(true)}>
           v{latest.version}
         </button>
