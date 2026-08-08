@@ -1,0 +1,8 @@
+{
+  "boards": {
+    "main": { "blocks": [], "connections": [] },
+    "тест": { "blocks": [], "connections": [] }
+  },
+  "current": "main",
+  "list": ["main", "тест"]
+}
