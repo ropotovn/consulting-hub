@@ -44,7 +44,7 @@ const TaskBoard: React.FC = () => {
     touchRef.current = null;
   };
 
-  const [sortBy, setSortBy] = useState<'priority-desc' | 'priority-asc' | 'deadline' | 'none'>('none');
+  const [sortEnabled, setSortEnabled] = useState(true);
 
   const filtered = tasks.filter(t => {
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
@@ -53,19 +53,15 @@ const TaskBoard: React.FC = () => {
     return true;
   });
 
-  // Sort
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = sortEnabled ? [...filtered].sort((a, b) => {
     const pOrder: Record<string, number> = { now: 0, soon: 1, later: 2 };
-    if (sortBy === 'priority-desc') return pOrder[a.priority] - pOrder[b.priority];
-    if (sortBy === 'priority-asc') return pOrder[b.priority] - pOrder[a.priority];
-    if (sortBy === 'deadline') {
-      if (!a.deadline && !b.deadline) return 0;
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    }
-    return 0;
-  });
+    const pDiff = pOrder[a.priority] - pOrder[b.priority];
+    if (pDiff !== 0) return pDiff;
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+  }) : filtered;
 
   const grouped: Record<TaskStatus, typeof sorted> = {
     todo: sorted.filter(t => t.status === 'todo'),
@@ -213,11 +209,8 @@ const TaskBoard: React.FC = () => {
       <div className="board-header">
         <h2>Tasks</h2>
         <div className="sort-controls">
-          <button className={`filter-chip ${sortBy === 'priority-desc' ? 'active' : ''}`} onClick={() => setSortBy(sortBy === 'priority-desc' ? 'none' : 'priority-desc')}>
-            Priority ↓
-          </button>
-          <button className={`filter-chip ${sortBy === 'deadline' ? 'active' : ''}`} onClick={() => setSortBy(sortBy === 'deadline' ? 'none' : 'deadline')}>
-            Deadline
+          <button className={`filter-chip ${sortEnabled ? 'active' : ''}`} onClick={() => setSortEnabled(!sortEnabled)}>
+            Priority
           </button>
         </div>
         <button className="btn-primary" onClick={() => { store.setEditingTask(null); store.setShowTaskForm(true); }}>+ New task</button>
