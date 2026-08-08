@@ -236,7 +236,7 @@ const TaskBoard: React.FC = () => {
               {grouped[status].map(task => (
                 <div
                   key={task.id}
-                  className={`task-card ${dragId === task.id ? 'dragging' : ''} ${snappedId === task.id ? 'snapped' : ''} priority-${task.priority} ${task.status === 'done' ? 'status-done' : ''}`}
+                  className={`task-card ${dragId === task.id ? 'dragging' : ''} ${snappedId === task.id ? 'snapped' : ''} priority-${task.priority}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
                   onDragEnd={handleDragEnd}
