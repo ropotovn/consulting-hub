@@ -231,6 +231,11 @@ const TaskBoard: React.FC = () => {
                     <div className="card-title">{task.title}</div>
                     {task.deadline && <div className="card-deadline">{new Date(task.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</div>}
                     <div className="card-tags">{task.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}</div>
+                    {task.comments && task.comments.length > 0 && (
+                      <div className="card-last-comment">
+                        {task.comments[task.comments.length - 1].authorName}: {task.comments[task.comments.length - 1].text.slice(0, 60)}{task.comments[task.comments.length - 1].text.length > 60 ? '…' : ''}
+                      </div>
+                    )}
                   </div>
                   <div className="card-assignee">{task.assignee === 'nikita' ? 'N' : 'S'}</div>
                 </div>

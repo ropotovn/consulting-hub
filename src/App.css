@@ -365,6 +365,12 @@ body {
   font-size: 9px; color: var(--text-muted); flex-shrink: 0; font-family: var(--font-mono);
 }
 
+.card-last-comment {
+  font-size: 9px; color: var(--text-muted); margin-top: 3px;
+  padding-top: 3px; border-top: 1px solid var(--border-light);
+  font-style: italic; line-height: 1.3;
+}
+
 /* === Inputs === */
 .input {
   width: 100%; padding: 5px 8px;
