@@ -364,7 +364,7 @@ const Board = React.memo(function Board() {
           <div className="board-draw-preview" style={{ left: drawPreview.x, top: drawPreview.y, width: drawPreview.w, height: drawPreview.h }} />
         )}
         {blocks.length === 0 && !drawPreview && (
-          <div className="board-empty">drag to create a block</div>
+          <div className="board-empty">draw a block</div>
         )}
       </div>
     </div>
