@@ -336,7 +336,15 @@ body {
   background: #b91c1c; height: 56px;
 }
 
-/* Priority stripe on cards */
+/* Done tasks — green visual */
+.task-card.status-done {
+  opacity: 0.75;
+}
+.task-card.status-done .card-title {
+  text-decoration: line-through;
+  text-decoration-color: #22c55e;
+  text-decoration-thickness: 1px;
+}
 .task-card.priority-now {
   border-left: 3px solid #ef4444;
 }
