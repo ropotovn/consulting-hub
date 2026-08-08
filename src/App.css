@@ -338,14 +338,22 @@ body {
 
 /* Priority stripe on cards */
 .task-card.priority-now {
-  border-left: 3px solid var(--text);
+  border-left: 3px solid #ef4444;
 }
 .task-card.priority-soon {
-  border-left: 3px solid var(--text-muted);
+  border-left: 3px solid #f59e0b;
 }
 .task-card.priority-later {
-  border-left: 3px solid var(--border);
+  border-left: 3px solid #94a3b8;
 }
+
+.card-priority-label {
+  font-size: 8px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.04em; font-family: var(--font-mono);
+}
+.card-priority-label.now { color: #ef4444; }
+.card-priority-label.soon { color: #f59e0b; }
+.card-priority-label.later { color: #94a3b8; }
 
 /* Sort controls */
 .sort-controls {

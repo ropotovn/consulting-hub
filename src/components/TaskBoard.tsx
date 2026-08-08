@@ -245,7 +245,9 @@ const TaskBoard: React.FC = () => {
                 >
                   <div className="card-status-dot" style={{ background: STATUS_DOT[task.status] }} />
                   <div className="card-body">
-                    <div className="card-title">{task.title}</div>
+                    <div className="card-title">
+                      <span className={`card-priority-label ${task.priority}`}>{task.priority === 'now' ? 'now' : task.priority === 'soon' ? 'soon' : 'later'}</span> {task.title}
+                    </div>
                     {task.deadline && <div className="card-deadline">{new Date(task.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</div>}
                     <div className="card-tags">{task.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}</div>
                     {task.comments && task.comments.length > 0 && (
