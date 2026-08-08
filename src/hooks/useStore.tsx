@@ -91,14 +91,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           setTasks(remoteTasks.filter((t: Task) => !deletedIds.includes(t.id)));
           setNotes(remoteNotes.filter((n: Note) => !deletedIds.includes(n.id)));
         } else {
-          // Merge: remote wins for new/updated fields, local wins for deletions
+          // Merge: remote is source of truth, keep local comments not yet in remote
           setTasks(prev => {
             const localMap = new Map(prev.map(t => [t.id, t]));
             const merged = remoteTasks
               .filter((t: Task) => !deletedIds.includes(t.id))
               .map((t: Task) => {
                 const local = localMap.get(t.id);
-                return local ? { ...t, comments: local.comments, status: local.status } : t;
+                if (!local) return t;
+                // Merge comments: remote + local comments that are newer
+                const remoteIds = new Set((t.comments || []).map((c: any) => c.id));
+                const mergedComments = [...(t.comments || []), ...(local.comments || []).filter((c: any) => !remoteIds.has(c.id))];
+                return { ...t, comments: mergedComments, status: local.status };
               });
             return merged;
           });
@@ -108,9 +112,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               .filter((n: Note) => !deletedIds.includes(n.id))
               .map((n: Note) => {
                 const local = localMap.get(n.id);
-                // Remote wins for content, local wins for comments + pinned
-                if (local) return { ...n, comments: local.comments || n.comments, pinned: local.pinned ?? n.pinned };
-                return n;
+                if (!local) return n;
+                // Merge comments: remote + local comments that are newer
+                const remoteIds = new Set((n.comments || []).map((c: any) => c.id));
+                const mergedComments = [...(n.comments || []), ...(local.comments || []).filter((c: any) => !remoteIds.has(c.id))];
+                return { ...n, comments: mergedComments, pinned: local.pinned ?? n.pinned };
               });
             return merged;
           });
