@@ -1,6 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
 import { useTelegram } from '../hooks/useTelegram';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const KbCommentInput: React.FC<{
   noteId: string; selectedText: string; startOffset: number; endOffset: number;
@@ -69,42 +71,57 @@ const KnowledgeBase: React.FC = () => {
     }
   }, [selectedNote]);
 
-  // Render content with highlighted comments
-  const renderContent = () => {
-    if (!selectedNote) return null;
-    let content = selectedNote.content;
+  // Apply comment highlights to the rendered markdown
+  useEffect(() => {
+    if (!contentRef.current || !selectedNote) return;
     const comments = selectedNote.comments || [];
+    if (!comments.length) return;
 
-    // Build highlighted version: wrap commented text in <mark>
+    const walker = document.createTreeWalker(contentRef.current, NodeFilter.SHOW_TEXT);
+    const textNodes: Text[] = [];
+    let node: Text | null;
+    while ((node = walker.nextNode() as Text)) {
+      if (node.textContent) textNodes.push(node);
+    }
+
+    // Build a flat text representation
+    let flat = '';
+    const nodeMap: { node: Text; start: number; end: number }[] = [];
+    textNodes.forEach(n => {
+      const start = flat.length;
+      flat += n.textContent || '';
+      nodeMap.push({ node: n, start, end: flat.length });
+    });
+
+    // Apply highlights
     const sorted = [...comments].sort((a, b) => a.startOffset - b.startOffset);
-    let result = '';
-    let lastEnd = 0;
-    const highlights: { start: number; end: number; commentId: string }[] = [];
-
     sorted.forEach(c => {
-      if (c.startOffset >= lastEnd && c.endOffset <= content.length) {
-        result += escapeHtml(content.slice(lastEnd, c.startOffset));
-        result += `<mark class="kb-highlight" data-comment="${c.id}">${escapeHtml(content.slice(c.startOffset, c.endOffset))}</mark>`;
-        highlights.push({ start: c.startOffset, end: c.endOffset, commentId: c.id });
-        lastEnd = c.endOffset;
+      if (c.startOffset >= flat.length || c.endOffset > flat.length) return;
+      // Find which text node contains this offset
+      for (const m of nodeMap) {
+        if (c.startOffset >= m.start && c.startOffset < m.end) {
+          const localStart = c.startOffset - m.start;
+          const localEnd = Math.min(c.endOffset, m.end) - m.start;
+          if (localStart >= 0 && localEnd > localStart) {
+            const range = document.createRange();
+            range.setStart(m.node, localStart);
+            range.setEnd(m.node, localEnd);
+            const mark = document.createElement('mark');
+            mark.className = 'kb-highlight';
+            mark.dataset.comment = c.id;
+            try { range.surroundContents(mark); } catch {}
+            break;
+          }
+        }
       }
     });
-    result += escapeHtml(content.slice(lastEnd));
-
-    return { html: result, highlights };
-  };
-
-  function escapeHtml(s: string): string {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  }, [selectedNote]);
 
   const saveEditComment = (noteId: string, commentId: string) => {
     if (!editCommentText.trim()) return;
     updateNoteComment(noteId, commentId, editCommentText.trim());
     setEditingCommentId(null);
   };
-
-  const contentRendered = renderContent();
 
   return (
     <div className="kb-layout">
@@ -120,7 +137,7 @@ const KnowledgeBase: React.FC = () => {
         ))}
       </div>
 
-      <div className="kb-note-panel" ref={contentRef} onMouseUp={handleTextSelection} onKeyUp={handleTextSelection}>
+      <div className="kb-note-panel" onMouseUp={handleTextSelection} onKeyUp={handleTextSelection}>
         {selectedNote ? (
           <div className="kb-note-layout">
             <div className="kb-note-main">
@@ -136,7 +153,9 @@ const KnowledgeBase: React.FC = () => {
                 <span>Updated {new Date(selectedNote.updatedAt).toLocaleDateString('ru-RU')}</span>
                 {selectedNote.tags.length > 0 && <div className="kb-tags">{selectedNote.tags.map(tag => <span key={tag} className="kb-tag">{tag}</span>)}</div>}
               </div>
-              <div className="kb-note-content markdown-body" dangerouslySetInnerHTML={{ __html: contentRendered?.html || '' }} />
+              <div ref={contentRef} className="kb-note-content markdown-body">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedNote.content}</ReactMarkdown>
+              </div>
             </div>
 
             <div className="kb-refs">
