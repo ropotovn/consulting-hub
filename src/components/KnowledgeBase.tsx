@@ -51,18 +51,16 @@ const KnowledgeBase: React.FC = () => {
   const [editCommentText, setEditCommentText] = useState('');
   const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const formActiveRef = useRef(false);
 
   const backlinks = selectedNoteId ? notes.filter(n => n.links.includes(selectedNoteId)) : [];
   const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) : null;
 
-  const handleTextSelection = useCallback((e: React.MouseEvent) => {
-    // Don't clear selection if focus is in the comment form
-    if ((document.activeElement as HTMLElement)?.closest('.kb-comment-form, .kb-comment-item')) return;
-    // Small delay to let browser finalize selection
-    setTimeout(() => {
+  const handleTextSelection = useCallback(() => {
+    if (formActiveRef.current) return;
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !(e.currentTarget as HTMLElement).contains(sel.anchorNode)) {
-      setSelection(null);
+    if (!sel || sel.isCollapsed) {
+      if (!formActiveRef.current) setSelection(null);
       return;
     }
     const text = sel.toString().trim();
@@ -71,10 +69,15 @@ const KnowledgeBase: React.FC = () => {
     const fullText = selectedNote?.content || '';
     const idx = fullText.indexOf(text);
     if (idx >= 0) {
+      formActiveRef.current = true;
       setSelection({ text, start: idx, end: idx + text.length });
     }
-    }, 0);
   }, [selectedNote]);
+
+  const clearSelection = useCallback(() => {
+    setSelection(null);
+    formActiveRef.current = false;
+  }, []);
 
   // Apply comment highlights to the rendered markdown
   useEffect(() => {
@@ -212,7 +215,7 @@ const KnowledgeBase: React.FC = () => {
                 ))}
                 {/* Selection — new comment */}
                 {selection && (
-                  <KbCommentInput noteId={selectedNote.id} selectedText={selection.text} startOffset={selection.start} endOffset={selection.end} onDone={() => setSelection(null)} />
+                  <KbCommentInput noteId={selectedNote.id} selectedText={selection.text} startOffset={selection.start} endOffset={selection.end} onDone={clearSelection} />
                 )}
               </div>
             </div>
