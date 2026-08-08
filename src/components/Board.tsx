@@ -79,6 +79,8 @@ const Board = React.memo(function Board() {
   const [scale, setScale] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
+  const [tool, setTool] = useState<'select' | 'draw' | 'arrow' | 'rect' | 'circle'>('select');
+  const [blockColor, setBlockColor] = useState('#ffffff');
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -176,7 +178,7 @@ const Board = React.memo(function Board() {
       const minX = Math.min(s.startX, x), minY = Math.min(s.startY, y);
       const block: BoardBlock = {
         id: newId(), x: minX, y: minY, text: '',
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        color: blockColor,
         width: Math.max(60, Math.abs(x - s.startX)), height: Math.max(50, Math.abs(y - s.startY)),
       };
       persistBlocks([...blocksRef.current, block]);
@@ -293,10 +295,26 @@ const Board = React.memo(function Board() {
     <div className="board-view">
       <div className="board-header">
         <h2>Board</h2>
+        <div className="board-toolbar">
+          <button className={`board-tool ${tool === 'select' ? 'active' : ''}`} onClick={() => setTool('select')} title="Select/Move">↖</button>
+          <button className={`board-tool ${tool === 'draw' ? 'active' : ''}`} onClick={() => setTool('draw')} title="Draw block">▭</button>
+          <button className={`board-tool ${tool === 'rect' ? 'active' : ''}`} onClick={() => setTool('rect')} title="Rectangle">◻</button>
+          <button className={`board-tool ${tool === 'circle' ? 'active' : ''}`} onClick={() => setTool('circle')} title="Circle">○</button>
+          <span className="board-tool-sep" />
+          <button className={`board-tool ${tool === 'arrow' ? 'active' : ''}`} onClick={() => setTool('arrow')} title="Arrow mode">→</button>
+          <span className="board-tool-sep" />
+          {COLORS.slice(0, 6).map(c => (
+            <button
+              key={c}
+              className={`board-color-dot ${blockColor === c ? 'active' : ''}`}
+              style={{ background: c }}
+              onClick={() => setBlockColor(c)}
+            />
+          ))}
+        </div>
         <span className="board-hint">drag to create · drag dots for arrows</span>
       </div>
       <div ref={canvasRef} className="board-canvas" onMouseDown={handleCanvasMouseDown}>
-        <div className="board-canvas-inner" style={{ transform: `scale(${scale}) translate(${panX}px, ${panY}px)`, transformOrigin: '0 0' }}>
         <svg className="board-arrows">
           {connections.map(conn => {
             const from = blocks.find(b => b.id === conn.fromId);
@@ -348,7 +366,6 @@ const Board = React.memo(function Board() {
         {blocks.length === 0 && !drawPreview && (
           <div className="board-empty">drag to create a block</div>
         )}
-        </div>
       </div>
     </div>
   );

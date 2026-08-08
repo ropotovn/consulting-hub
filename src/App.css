@@ -721,14 +721,40 @@ select.input { cursor: pointer; appearance: none; }
 }
 
 .board-header {
-  display: flex; align-items: baseline; gap: 16px;
-  margin-bottom: 10px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 10px; flex-shrink: 0; flex-wrap: wrap;
 }
 
 .board-header h2 {
   font-size: 15px; font-weight: 600; font-family: var(--font-mono);
   letter-spacing: -0.02em;
 }
+
+.board-toolbar {
+  display: flex; align-items: center; gap: 2px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 2px; background: var(--bg-secondary);
+}
+
+.board-tool {
+  padding: 4px 7px; border: none; background: transparent;
+  font-size: 13px; cursor: pointer; border-radius: 3px;
+  color: var(--text-secondary); line-height: 1;
+  transition: background 0.1s;
+}
+.board-tool:hover { background: var(--bg-hover); color: var(--text); }
+.board-tool.active { background: var(--bg-active); color: var(--text); }
+
+.board-tool-sep {
+  width: 1px; height: 16px; background: var(--border); margin: 0 2px;
+}
+
+.board-color-dot {
+  width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--border);
+  cursor: pointer; transition: transform 0.1s; padding: 0;
+}
+.board-color-dot:hover { transform: scale(1.15); }
+.board-color-dot.active { border: 2px solid var(--text); }
 
 .board-hint {
   font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);
@@ -824,7 +850,7 @@ select.input { cursor: pointer; appearance: none; }
 
 /* SVG arrows */
 .board-arrows {
-  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
   width: 100%; height: 100%;
 }
 
