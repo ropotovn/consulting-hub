@@ -7,8 +7,14 @@ function newId(): string {
   return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 }
 
-const STORAGE_BLOCKS = 'shtab_board_blocks';
-const STORAGE_CONNS = 'shtab_board_conns_v2';
+const STORAGE_BOARDS = 'shtab_boards_list';
+const STORAGE_CURRENT = 'shtab_board_current';
+
+function boardKey(board: string, suffix: string) { return `shtab_board_${board}_${suffix}`; }
+
+function loadBoards(): string[] {
+  try { return JSON.parse(localStorage.getItem(STORAGE_BOARDS) || '["main"]'); } catch { return ['main']; }
+}
 
 function load<T>(key: string, fallback: T): T {
   try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
@@ -70,8 +76,12 @@ function bezierPath(x1: number, y1: number, x2: number, y2: number, side1: Conne
 }
 
 const Board = React.memo(function Board() {
-  const [blocks, setBlocks] = useState<BoardBlock[]>(() => load(STORAGE_BLOCKS, []));
-  const [connections, setConnections] = useState<BoardConnection[]>(() => load(STORAGE_CONNS, []));
+  const [boards, setBoards] = useState<string[]>(loadBoards);
+  const [currentBoard, setCurrentBoard] = useState(() => localStorage.getItem(STORAGE_CURRENT) || 'main');
+  const boardB = boardKey(currentBoard, 'blocks');
+  const boardC = boardKey(currentBoard, 'conns');
+  const [blocks, setBlocks] = useState<BoardBlock[]>(() => load(boardB, []));
+  const [connections, setConnections] = useState<BoardConnection[]>(() => load(boardC, []));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [drawPreview, setDrawPreview] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -97,9 +107,38 @@ const Board = React.memo(function Board() {
   toolRef.current = tool;
   const arrowStyleRef = useRef(arrowStyle);
   arrowStyleRef.current = arrowStyle;
+  const boardRef = useRef(currentBoard);
+  boardRef.current = currentBoard;
 
-  const persistBlocks = (b: BoardBlock[]) => { setBlocks(b); save(STORAGE_BLOCKS, b); };
-  const persistConns = (c: BoardConnection[]) => { setConnections(c); save(STORAGE_CONNS, c); };
+  const persistBlocks = (b: BoardBlock[]) => { setBlocks(b); save(boardB, b); };
+  const persistConns = (c: BoardConnection[]) => { setConnections(c); save(boardC, c); };
+
+  const switchBoard = (name: string) => {
+    setCurrentBoard(name);
+    localStorage.setItem(STORAGE_CURRENT, name);
+    setBlocks(load(boardKey(name, 'blocks'), []));
+    setConnections(load(boardKey(name, 'conns'), []));
+    setSelectedId(null);
+  };
+
+  const createBoard = () => {
+    const name = prompt('Board name:');
+    if (!name || boards.includes(name)) return;
+    const next = [...boards, name];
+    setBoards(next);
+    localStorage.setItem(STORAGE_BOARDS, JSON.stringify(next));
+    switchBoard(name);
+  };
+
+  const deleteBoard = (name: string) => {
+    if (boards.length <= 1) return;
+    const next = boards.filter(b => b !== name);
+    setBoards(next);
+    localStorage.setItem(STORAGE_BOARDS, JSON.stringify(next));
+    localStorage.removeItem(boardKey(name, 'blocks'));
+    localStorage.removeItem(boardKey(name, 'conns'));
+    if (currentBoard === name) switchBoard(next[0]);
+  };
 
   // Pinch zoom refs
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
@@ -276,7 +315,7 @@ const Board = React.memo(function Board() {
       if (nx !== sx || ny !== sy) {
         setBlocks(prev => {
           const next = prev.map(b => b.id === block.id ? { ...b, x: nx, y: ny } : b);
-          save(STORAGE_BLOCKS, next); return next;
+          save(boardKey(boardRef.current, 'blocks'), next); return next;
         });
       }
       document.removeEventListener('mousemove', hm);
@@ -323,7 +362,7 @@ const Board = React.memo(function Board() {
       ));
     };
     const hu = () => {
-      setBlocks(prev => { save(STORAGE_BLOCKS, prev); return prev; });
+      setBlocks(prev => { save(boardKey(boardRef.current, 'blocks'), prev); return prev; });
       document.removeEventListener('mousemove', hm); document.removeEventListener('mouseup', hu);
     };
     document.addEventListener('mousemove', hm); document.addEventListener('mouseup', hu);
@@ -334,6 +373,14 @@ const Board = React.memo(function Board() {
       <div className="board-header">
         <h2>Board</h2>
         <div className="board-toolbar">
+          <select className="board-select" value={currentBoard} onChange={e => switchBoard(e.target.value)}>
+            {boards.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+          <button className="board-tool" onClick={createBoard} title="New board">+</button>
+          {boards.length > 1 && (
+            <button className="board-tool" onClick={() => { if (confirm(`Delete "${currentBoard}"?`)) deleteBoard(currentBoard); }} title="Delete board">×</button>
+          )}
+          <span className="board-tool-sep" />
           <button className={`board-tool ${tool === 'select' ? 'active' : ''}`} onClick={() => setTool('select')} title="Select/Move">↖</button>
           <button className={`board-tool ${tool === 'draw' ? 'active' : ''}`} onClick={() => setTool('draw')} title="Draw block">▭</button>
           <button className={`board-tool ${tool === 'rect' ? 'active' : ''}`} onClick={() => setTool('rect')} title="Rectangle">◻</button>
@@ -361,7 +408,7 @@ const Board = React.memo(function Board() {
                 if (selectedId) {
                   setBlocks(prev => {
                     const next = prev.map(b => b.id === selectedId ? { ...b, color: c } : b);
-                    save(STORAGE_BLOCKS, next);
+                    save(boardKey(boardRef.current, 'blocks'), next);
                     return next;
                   });
                 }

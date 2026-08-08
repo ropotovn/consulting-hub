@@ -849,6 +849,13 @@ mark.kb-highlight:hover {
   width: 1px; height: 16px; background: var(--border); margin: 0 2px;
 }
 
+.board-select {
+  padding: 3px 4px; border: 1px solid var(--border); border-radius: 3px;
+  background: var(--bg); color: var(--text); font-size: 11px;
+  font-family: var(--font-mono); cursor: pointer; outline: none;
+  max-width: 100px;
+}
+
 .board-color-dot {
   width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--border);
   cursor: pointer; transition: transform 0.1s; padding: 0;
