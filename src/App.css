@@ -455,7 +455,44 @@ select.input { cursor: pointer; appearance: none; }
 
 .kb-file-icon { font-size: 10px; color: var(--text-muted); width: 12px; text-align: center; }
 
-.kb-note-panel { flex: 1; overflow-y: auto; max-width: 720px; }
+.kb-note-panel { flex: 1; overflow-y: auto; }
+
+.kb-note-layout {
+  display: flex; gap: 32px;
+}
+
+.kb-note-main {
+  flex: 1; min-width: 0;
+}
+
+/* References sidebar */
+.kb-refs {
+  width: 180px; min-width: 180px; flex-shrink: 0;
+  padding-top: 28px;
+}
+
+.kb-refs-section {
+  margin-bottom: 16px;
+}
+
+.kb-refs-title {
+  font-size: 9px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.07em; margin-bottom: 6px; font-family: var(--font-mono);
+}
+
+.kb-refs-item {
+  display: block; padding: 3px 6px; font-size: 11px;
+  color: var(--text-secondary); cursor: pointer;
+  border: none; background: none; text-align: left;
+  border-radius: var(--radius-sm); width: 100%;
+  font-family: var(--font-ui);
+}
+.kb-refs-item:hover { background: var(--bg-hover); color: var(--text); }
+
+.kb-refs-empty {
+  font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);
+  line-height: 1.5;
+}
 
 .kb-note-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
@@ -878,6 +915,13 @@ select.input { cursor: pointer; appearance: none; }
     flex-direction: column;
     height: auto;
     gap: 10px;
+  }
+  .kb-note-layout {
+    flex-direction: column; gap: 12px;
+  }
+  .kb-refs {
+    width: 100%; min-width: 0; padding-top: 0;
+    border-top: 1px solid var(--border); padding-top: 10px;
   }
 
   .kb-files {

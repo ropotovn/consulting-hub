@@ -47,7 +47,8 @@ const KnowledgeBase: React.FC = () => {
       {/* Note content */}
       <div className="kb-note-panel">
         {selectedNote ? (
-          <>
+          <div className="kb-note-layout">
+            <div className="kb-note-main">
             <div className="kb-note-header">
               <button className="btn-back" onClick={() => setSelectedNoteId(null)}>
                 &larr; All notes
@@ -80,34 +81,38 @@ const KnowledgeBase: React.FC = () => {
             <div className="kb-note-content markdown-body">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedNote.content}</ReactMarkdown>
             </div>
+            </div>
 
-            {/* Linked notes */}
-            {selectedNote.links.length > 0 && (
-              <div className="kb-backlinks">
-                <div className="kb-backlinks-title">Links</div>
-                {selectedNote.links.map(linkId => {
-                  const linked = notes.find(n => n.id === linkId);
-                  return linked ? (
-                    <button key={linkId} className="kb-backlink-item" onClick={() => setSelectedNoteId(linkId)}>
-                      {linked.title}
+            {/* References sidebar */}
+            <div className="kb-refs">
+              {selectedNote.links.length > 0 && (
+                <div className="kb-refs-section">
+                  <div className="kb-refs-title">Links</div>
+                  {selectedNote.links.map(linkId => {
+                    const linked = notes.find(n => n.id === linkId);
+                    return linked ? (
+                      <button key={linkId} className="kb-refs-item" onClick={() => setSelectedNoteId(linkId)}>
+                        {linked.title}
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              )}
+              {backlinks.length > 0 && (
+                <div className="kb-refs-section">
+                  <div className="kb-refs-title">Linked from</div>
+                  {backlinks.map(n => (
+                    <button key={n.id} className="kb-refs-item" onClick={() => setSelectedNoteId(n.id)}>
+                      {n.title}
                     </button>
-                  ) : null;
-                })}
-              </div>
-            )}
-
-            {/* Backlinks */}
-            {backlinks.length > 0 && (
-              <div className="kb-linked-from">
-                <div className="kb-backlinks-title">Linked from</div>
-                {backlinks.map(n => (
-                  <button key={n.id} className="kb-backlink-item" onClick={() => setSelectedNoteId(n.id)}>
-                    {n.title}
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+                  ))}
+                </div>
+              )}
+              {selectedNote.links.length === 0 && backlinks.length === 0 && (
+                <div className="kb-refs-empty">No references yet.<br />Use [[links]] to connect notes.</div>
+              )}
+            </div>
+          </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>
             Select a note

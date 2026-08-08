@@ -6,6 +6,27 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.16',
+    date: '2026-08-08',
+    changes: [
+      'Board pinch-to-zoom and pan on mobile (0.3x–3x)',
+      'Rich text formatting toolbar in note editor',
+      'Mobile modal scroll fix — buttons always visible',
+      'Wider KB note panel — uses more screen space',
+      'Audit complete — touch drag 300ms hold delay',
+    ],
+  },
+  {
+    version: '0.15',
+    date: '2026-08-08',
+    changes: [
+      'Clickable version footer with full patch notes',
+      'Touch drag requires 300ms hold — no accidental moves',
+      'Theme grid: 4×2 for 8 themes',
+      'JSON data fix — Nikita as default assignee',
+    ],
+  },
+  {
     version: '0.14',
     date: '2026-08-08',
     changes: [
