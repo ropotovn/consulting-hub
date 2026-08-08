@@ -55,6 +55,8 @@ const KnowledgeBase: React.FC = () => {
   const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) : null;
 
   const handleTextSelection = useCallback(() => {
+    // Don't clear selection if focus is in the comment form
+    if ((document.activeElement as HTMLElement)?.closest('.kb-comment-form, .kb-comment-item')) return;
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || !contentRef.current?.contains(sel.anchorNode)) {
       setSelection(null);
