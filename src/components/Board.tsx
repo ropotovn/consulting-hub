@@ -82,6 +82,7 @@ const Board = React.memo(function Board() {
   const [tool, setTool] = useState<'select' | 'draw' | 'arrow' | 'rect' | 'circle'>('select');
   const [blockColor, setBlockColor] = useState('#ffffff');
   const [arrowStyle, setArrowStyle] = useState<'none' | 'end' | 'both'>('end');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -148,6 +149,16 @@ const Board = React.memo(function Board() {
       el.removeEventListener('touchend', handleTouchEnd);
     };
   }, [scale, panX, panY]);
+
+  // Smart text color — black or white based on background brightness
+  const textColor = (bg: string) => {
+    const hex = bg.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 150 ? '#0d0d0d' : '#f0f0f0';
+  };
 
   const canvasXY = (clientX: number, clientY: number) => {
     const el = canvasRef.current;
@@ -285,7 +296,21 @@ const Board = React.memo(function Board() {
     persistBlocks(blocks.filter(b => b.id !== id));
     persistConns(connections.filter(c => c.fromId !== id && c.toId !== id));
     if (editingId === id) setEditingId(null);
-  }, [blocks, connections, editingId]);
+    if (selectedId === id) setSelectedId(null);
+  }, [blocks, connections, editingId, selectedId]);
+
+  // Delete key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (editingId) return; // don't delete while editing text
+        if (selectedId) { deleteBlock(selectedId); }
+      }
+      if (e.key === 'Escape') setSelectedId(null);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectedId, editingId]);
   const deleteConnection = useCallback((id: string) => {
     persistConns(connections.filter(c => c.id !== id));
   }, [connections]);
@@ -331,9 +356,20 @@ const Board = React.memo(function Board() {
               key={c}
               className={`board-color-dot ${blockColor === c ? 'active' : ''}`}
               style={{ background: c }}
-              onClick={() => setBlockColor(c)}
+              onClick={() => {
+                setBlockColor(c);
+                if (selectedId) {
+                  setBlocks(prev => {
+                    const next = prev.map(b => b.id === selectedId ? { ...b, color: c } : b);
+                    save(STORAGE_BLOCKS, next);
+                    return next;
+                  });
+                }
+              }}
             />
           ))}
+          <span className="board-tool-sep" />
+          <button className="board-tool" onClick={() => { persistBlocks([]); setSelectedId(null); }} title="Clear all">✕</button>
         </div>
         <span className="board-hint">drag to create · drag dots for arrows</span>
       </div>
@@ -366,8 +402,18 @@ const Board = React.memo(function Board() {
 
         {blocks.map(block => (
           <div key={block.id} className="board-block"
-            style={{ left: block.x, top: block.y, width: block.width, height: block.height, background: block.color, borderRadius: block.shape === 'circle' ? '50%' : block.shape === 'rect' ? 'var(--radius-sm)' : undefined }}
-            onMouseDown={(e) => handleBlockMouseDown(e, block)}
+            style={{
+              left: block.x, top: block.y, width: block.width, height: block.height,
+              background: block.color,
+              borderRadius: block.shape === 'circle' ? '50%' : block.shape === 'rect' ? 'var(--radius-sm)' : undefined,
+              color: textColor(block.color),
+              borderColor: selectedId === block.id ? 'var(--text)' : undefined,
+              borderWidth: selectedId === block.id ? '2px' : undefined,
+            }}
+            onMouseDown={(e) => {
+              setSelectedId(block.id);
+              handleBlockMouseDown(e, block);
+            }}
             onDoubleClick={() => handleDoubleClick(block)}>
             <button className="board-block-delete" onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}>×</button>
             {!editingId && (
