@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../hooks/useStore';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -22,9 +22,31 @@ const NoteEdit: React.FC = () => {
       setContent(existingNote.content);
       setTags(existingNote.tags.join(', '));
     } else {
-      setTitle(''); setContent(''); setTags('');
+      // Restore draft if exists
+      const draft = localStorage.getItem('shtab_note_draft');
+      if (draft) {
+        try {
+          const d = JSON.parse(draft);
+          setTitle(d.title || '');
+          setContent(d.content || '');
+          setTags(d.tags || '');
+        } catch {}
+      } else {
+        setTitle(''); setContent(''); setTags('');
+      }
     }
   }, [existingNote]);
+
+  // Autosave draft every 1.5s
+  const draftTimer = useRef<number>(0);
+  useEffect(() => {
+    if (existingNote) return;
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = window.setTimeout(() => {
+      localStorage.setItem('shtab_note_draft', JSON.stringify({ title, content, tags }));
+    }, 1500);
+    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
+  }, [title, content, tags, existingNote]);
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -49,6 +71,7 @@ const NoteEdit: React.FC = () => {
       });
     }
 
+    localStorage.removeItem('shtab_note_draft');
     setEditingNoteId(null);
   };
 
