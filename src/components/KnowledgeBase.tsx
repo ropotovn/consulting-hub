@@ -55,23 +55,25 @@ const KnowledgeBase: React.FC = () => {
   const backlinks = selectedNoteId ? notes.filter(n => n.links.includes(selectedNoteId)) : [];
   const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) : null;
 
-  const handleTextSelection = useCallback(() => {
+  const handleTextSelection = useCallback((e: React.MouseEvent) => {
     // Don't clear selection if focus is in the comment form
     if ((document.activeElement as HTMLElement)?.closest('.kb-comment-form, .kb-comment-item')) return;
+    // Small delay to let browser finalize selection
+    setTimeout(() => {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !contentRef.current?.contains(sel.anchorNode)) {
+    if (!sel || sel.isCollapsed || !(e.currentTarget as HTMLElement).contains(sel.anchorNode)) {
       setSelection(null);
       return;
     }
     const text = sel.toString().trim();
     if (!text) { setSelection(null); return; }
 
-    // Get offset within the raw content
     const fullText = selectedNote?.content || '';
     const idx = fullText.indexOf(text);
     if (idx >= 0) {
       setSelection({ text, start: idx, end: idx + text.length });
     }
+    }, 0);
   }, [selectedNote]);
 
   // Apply comment highlights to the rendered markdown
@@ -142,10 +144,10 @@ const KnowledgeBase: React.FC = () => {
         ))}
       </div>
 
-      <div className="kb-note-panel" onMouseUp={handleTextSelection}>
+      <div className="kb-note-panel">
         {selectedNote ? (
           <div className="kb-note-layout">
-            <div className="kb-note-main">
+            <div className="kb-note-main" onMouseUp={handleTextSelection}>
               <div className="kb-note-header">
                 <button className="btn-back" onClick={() => setSelectedNoteId(null)}>&larr; All notes</button>
                 <div className="kb-note-actions">
