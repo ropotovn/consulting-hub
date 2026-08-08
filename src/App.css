@@ -491,6 +491,25 @@ select.input { cursor: pointer; appearance: none; }
 
 .kb-file-icon { font-size: 10px; color: var(--text-muted); width: 12px; text-align: center; }
 
+.kb-badge-new {
+  font-size: 8px; font-weight: 600; color: #22c55e;
+  font-family: var(--font-mono); text-transform: uppercase;
+  margin-left: 4px;
+}
+
+.kb-badge-comment {
+  font-size: 9px; color: var(--bg); background: var(--text-secondary);
+  border-radius: 8px; padding: 0 5px; font-family: var(--font-mono);
+  margin-left: auto; margin-right: 4px; min-width: 16px; text-align: center;
+}
+
+.kb-pin-btn {
+  opacity: 0; background: none; border: none; cursor: pointer;
+  font-size: 10px; padding: 0 2px; transition: opacity 0.15s;
+}
+.kb-file-item:hover .kb-pin-btn { opacity: 0.6; }
+.kb-pin-btn:hover { opacity: 1 !important; }
+
 .kb-note-panel { flex: 1; overflow-y: auto; }
 
 .kb-note-layout {

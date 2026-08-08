@@ -45,7 +45,7 @@ const KbCommentInput: React.FC<{
 };
 
 const KnowledgeBase: React.FC = () => {
-  const { notes, selectedNoteId, setSelectedNoteId, setEditingNoteId, deleteNote, updateNoteComment, deleteNoteComment } = useStore();
+  const { notes, selectedNoteId, setSelectedNoteId, setEditingNoteId, deleteNote, updateNoteComment, deleteNoteComment, togglePinNote } = useStore();
   const [selection, setSelection] = useState<{ text: string; start: number; end: number } | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
@@ -167,11 +167,25 @@ const KnowledgeBase: React.FC = () => {
           <span className="kb-files-title">Notes</span>
           <button className="btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => setEditingNoteId('new')}>+</button>
         </div>
-        {notes.map(note => (
+        {[...notes].sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return 0;
+        }).map(note => {
+          const isNew = (Date.now() - new Date(note.createdAt).getTime()) < 172800000;
+          const commentCount = (note.comments || []).length;
+          const lastAuthor = commentCount > 0 ? note.comments![commentCount - 1].author : null;
+          return (
           <div key={note.id} className={`kb-file-item ${selectedNoteId === note.id ? 'active' : ''}`} onClick={() => setSelectedNoteId(note.id)}>
-            <span className="kb-file-icon">#</span>{note.title}
+            <span className="kb-file-icon">{note.pinned ? '📌' : '#'}</span>
+            {note.title}
+            {isNew && <span className="kb-badge-new">new</span>}
+            {commentCount > 0 && <span className="kb-badge-comment" title={`${commentCount} comment${commentCount > 1 ? 's' : ''}${lastAuthor ? ' by ' + lastAuthor : ''}`}>{commentCount}</span>}
+            <button className="kb-pin-btn" onClick={(e) => { e.stopPropagation(); togglePinNote(note.id); }} title={note.pinned ? 'Unpin' : 'Pin'}>
+              {note.pinned ? '✕' : '📌'}
+            </button>
           </div>
-        ))}
+        );})}
       </div>
 
       <div className="kb-note-panel">

@@ -35,6 +35,7 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
   comments: NoteComment[];
+  pinned?: boolean;
 }
 
 export interface NoteComment {

@@ -22,6 +22,7 @@ interface Store {
   addNoteComment: (noteId: string, comment: NoteComment) => void;
   updateNoteComment: (noteId: string, commentId: string, text: string) => void;
   deleteNoteComment: (noteId: string, commentId: string) => void;
+  togglePinNote: (noteId: string) => void;
   // filters
   filterStatus: TaskStatus | 'all';
   setFilterStatus: (s: TaskStatus | 'all') => void;
@@ -145,12 +146,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setNotes(prev => prev.map(n => n.id === noteId ? {
       ...n, comments: (n.comments || []).filter(c => c.id !== commentId)
     } : n)), []);
+  const togglePinNote = useCallback((noteId: string) =>
+    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, pinned: !n.pinned } : n)), []);
 
   return (
     <StoreContext.Provider value={{
       tasks, notes, view, setView,
       addTask, updateTask, deleteTask,
-      addNote, updateNote, deleteNote, addNoteComment, updateNoteComment, deleteNoteComment,
+      addNote, updateNote, deleteNote, addNoteComment, updateNoteComment, deleteNoteComment, togglePinNote,
       filterStatus, setFilterStatus,
       filterPriority, setFilterPriority,
       filterAssignee, setFilterAssignee,
