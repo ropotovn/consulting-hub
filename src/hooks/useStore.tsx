@@ -5,6 +5,7 @@ import { sampleTasks, sampleNotes } from '../data/sampleData';
 const STORAGE_KEY_TASKS = 'consulting_hub_tasks';
 const STORAGE_KEY_NOTES = 'consulting_hub_notes';
 const STORAGE_KEY_SYNCED = 'consulting_hub_synced';
+const STORAGE_KEY_DELETED = 'consulting_hub_deleted';
 const DATA_BASE = import.meta.env.BASE_URL + 'data/';
 
 interface Store {
@@ -84,20 +85,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ]);
 
         if (!syncedVersion) {
-          // First load: use remote data as source of truth
-          setTasks(remoteTasks);
-          setNotes(remoteNotes);
+          // First load: use remote data as source of truth, filtering deleted
+          const deletedIds: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+          setTasks(remoteTasks.filter((t: Task) => !deletedIds.includes(t.id)));
+          setNotes(remoteNotes.filter((n: Note) => !deletedIds.includes(n.id)));
           localStorage.setItem(STORAGE_KEY_SYNCED, Date.now().toString());
         } else {
-          // Already have local data — merge remote additions
+          // Already have local data — merge remote additions, filter deleted
+          const deletedIds: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
           setTasks(prev => {
             const localIds = new Set(prev.map(t => t.id));
-            const newTasks = remoteTasks.filter((t: Task) => !localIds.has(t.id));
+            const newTasks = remoteTasks.filter((t: Task) => !localIds.has(t.id) && !deletedIds.includes(t.id));
             return newTasks.length > 0 ? [...newTasks, ...prev] : prev;
           });
           setNotes(prev => {
             const localIds = new Set(prev.map(n => n.id));
-            const newNotes = remoteNotes.filter((n: Note) => !localIds.has(n.id));
+            const newNotes = remoteNotes.filter((n: Note) => !localIds.has(n.id) && !deletedIds.includes(n.id));
             return newNotes.length > 0 ? [...newNotes, ...prev] : prev;
           });
         }
@@ -121,8 +124,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addNote = useCallback((note: Note) => setNotes(prev => [note, ...prev]), []);
   const updateNote = useCallback((id: string, updates: Partial<Note>) =>
     setNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n)), []);
-  const deleteNote = useCallback((id: string) =>
-    setNotes(prev => prev.filter(n => n.id !== id)), []);
+  const deleteNote = useCallback((id: string) => {
+    // Add to deleted blacklist
+    try {
+      const deleted: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      if (!deleted.includes(id)) {
+        deleted.push(id);
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+      }
+    } catch {}
+    setNotes(prev => prev.filter(n => n.id !== id));
+  }, []);
   const addNoteComment = useCallback((noteId: string, comment: NoteComment) =>
     setNotes(prev => prev.map(n => n.id === noteId ? { ...n, comments: [...(n.comments || []), comment] } : n)), []);
   const updateNoteComment = useCallback((noteId: string, commentId: string, text: string) =>
