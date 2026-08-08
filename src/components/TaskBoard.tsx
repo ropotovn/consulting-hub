@@ -32,7 +32,17 @@ const TaskBoard: React.FC = () => {
   const touchRef = useRef<{
     id: string; el: HTMLElement; startX: number; startY: number;
     clone: HTMLElement; offsetX: number; offsetY: number;
+    timer: number; moved: boolean;
   } | null>(null);
+
+  const clearTouch = () => {
+    const t = touchRef.current;
+    if (!t) return;
+    if (t.timer) clearTimeout(t.timer);
+    if (t.clone) t.clone.remove();
+    t.el.style.opacity = '1';
+    touchRef.current = null;
+  };
 
   const filtered = tasks.filter(t => {
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
@@ -84,41 +94,53 @@ const TaskBoard: React.FC = () => {
     setDragId(null);
   }, [dragId, deleteTask]);
 
-  // Touch drag
+  // Touch drag — 300ms hold to activate
   const handleTouchStart = useCallback((e: React.TouchEvent, taskId: string) => {
     const touch = e.touches[0];
     const el = e.currentTarget as HTMLElement;
-    el.style.opacity = '0.5';
-
-    const clone = el.cloneNode(true) as HTMLElement;
-    clone.style.position = 'fixed';
-    clone.style.zIndex = '999';
-    clone.style.pointerEvents = 'none';
-    clone.style.width = el.offsetWidth + 'px';
-    clone.style.opacity = '0.9';
-    clone.style.transform = 'rotate(2deg)';
-    clone.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
-    document.body.appendChild(clone);
-
     const rect = el.getBoundingClientRect();
+
     touchRef.current = {
       id: taskId, el,
       startX: touch.clientX, startY: touch.clientY,
-      clone, offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top,
+      clone: null!, offsetX: 0, offsetY: 0,
+      timer: 0, moved: false,
     };
-    setDragId(taskId);
+
+    // After 300ms hold, activate drag mode
+    touchRef.current.timer = window.setTimeout(() => {
+      const t = touchRef.current;
+      if (!t) return;
+
+      el.style.opacity = '0.5';
+
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.position = 'fixed';
+      clone.style.zIndex = '999';
+      clone.style.pointerEvents = 'none';
+      clone.style.width = el.offsetWidth + 'px';
+      clone.style.opacity = '0.9';
+      clone.style.transform = 'rotate(2deg)';
+      clone.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+      document.body.appendChild(clone);
+
+      t.clone = clone;
+      t.offsetX = t.startX - rect.left;
+      t.offsetY = t.startY - rect.top;
+      t.moved = true;
+      setDragId(taskId);
+    }, 300);
   }, []);
 
   useEffect(() => {
     const handleMove = (ev: TouchEvent) => {
       const t = touchRef.current;
-      if (!t) return;
+      if (!t || !t.moved) return;
       ev.preventDefault();
       const touch = ev.touches[0];
       t.clone.style.left = (touch.clientX - t.offsetX) + 'px';
       t.clone.style.top = (touch.clientY - t.offsetY) + 'px';
 
-      // Hit-test columns
       const cols = document.querySelectorAll('.column');
       let overStatus: TaskStatus | null = null;
       cols.forEach(col => {
@@ -135,6 +157,7 @@ const TaskBoard: React.FC = () => {
     const handleEnd = (ev: TouchEvent) => {
       const t = touchRef.current;
       if (!t) return;
+      if (!t.moved) { clearTouch(); return; }
       t.clone.remove();
       t.el.style.opacity = '1';
 
@@ -155,6 +178,7 @@ const TaskBoard: React.FC = () => {
         });
       }
 
+      if (t.timer) clearTimeout(t.timer);
       touchRef.current = null;
       setDragId(null); setDragOver(null); setDragOverTrash(false);
     };
