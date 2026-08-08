@@ -455,7 +455,7 @@ select.input { cursor: pointer; appearance: none; }
 
 .kb-file-icon { font-size: 10px; color: var(--text-muted); width: 12px; text-align: center; }
 
-.kb-note-panel { flex: 1; overflow-y: auto; max-width: 640px; }
+.kb-note-panel { flex: 1; overflow-y: auto; max-width: 720px; }
 
 .kb-note-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
@@ -544,7 +544,23 @@ select.input { cursor: pointer; appearance: none; }
   font-family: var(--font-mono) !important;
 }
 .editor-title:focus { border: none !important; }
-.editor-actions { display: flex; gap: 4px; align-items: center; }
+.editor-actions { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+
+/* Format toolbar */
+.format-bar {
+  display: flex; gap: 1px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.fmt-btn {
+  padding: 3px 7px; background: var(--bg-secondary); border: none;
+  font-size: 12px; font-family: var(--font-mono); color: var(--text-secondary);
+  cursor: pointer; transition: background 0.1s;
+  border-right: 1px solid var(--border-light);
+}
+.fmt-btn:last-child { border-right: none; }
+.fmt-btn:hover { background: var(--bg-hover); color: var(--text); }
 .editor-content {
   min-height: 340px !important; border: none !important; border-radius: 0 !important;
   padding: 12px 14px !important; font-size: 12px !important; line-height: 1.7 !important;
@@ -919,9 +935,11 @@ select.input { cursor: pointer; appearance: none; }
   }
 
   .task-form .form-body,
-  .note-editor .editor-content {
+  .note-editor .editor-content,
+  .task-form .comments-section {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
   }
 
   .editor-header {

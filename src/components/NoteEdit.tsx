@@ -87,6 +87,16 @@ const NoteEdit: React.FC = () => {
             autoFocus
           />
           <div className="editor-actions">
+            <div className="format-bar">
+              <button type="button" className="fmt-btn" title="Bold" onClick={() => setContent(c => c + '**bold**')}>B</button>
+              <button type="button" className="fmt-btn" title="Heading" onClick={() => setContent(c => c + '\n## Heading')}>H</button>
+              <button type="button" className="fmt-btn" title="Bullet list" onClick={() => setContent(c => c + '\n- item')}>•</button>
+              <button type="button" className="fmt-btn" title="Numbered list" onClick={() => setContent(c => c + '\n1. item')}>1.</button>
+              <button type="button" className="fmt-btn" title="Todo" onClick={() => setContent(c => c + '\n- [ ] task')}>☐</button>
+              <button type="button" className="fmt-btn" title="Toggle" onClick={() => setContent(c => c + '\n<details>\n<summary>Title</summary>\n\nContent\n</details>')}>▸</button>
+              <button type="button" className="fmt-btn" title="Quote" onClick={() => setContent(c => c + '\n> quote')}>❝</button>
+              <button type="button" className="fmt-btn" title="Link" onClick={() => setContent(c => c + '[[note title]]')}>🔗</button>
+            </div>
             <button type="button" className={`btn-ghost ${preview ? 'active' : ''}`} onClick={() => setPreview(!preview)}>
               {preview ? 'Edit' : 'Preview'}
             </button>

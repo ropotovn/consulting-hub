@@ -76,6 +76,9 @@ const Board = React.memo(function Board() {
   const [editText, setEditText] = useState('');
   const [drawPreview, setDrawPreview] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [arrowPreview, setArrowPreview] = useState<{ d: string } | null>(null);
+  const [scale, setScale] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const drawRef = useRef<{ startX: number; startY: number } | null>(null);
@@ -87,6 +90,55 @@ const Board = React.memo(function Board() {
 
   const persistBlocks = (b: BoardBlock[]) => { setBlocks(b); save(STORAGE_BLOCKS, b); };
   const persistConns = (c: BoardConnection[]) => { setConnections(c); save(STORAGE_CONNS, c); };
+
+  // Pinch zoom refs
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
+  const panRef = useRef<{ startX: number; startY: number } | null>(null);
+
+  // Touch pan/zoom on canvas
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if ((e.target as HTMLElement).closest('.board-block, .board-connector')) return;
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchRef.current = { dist: Math.hypot(dx, dy), scale };
+      } else if (e.touches.length === 1) {
+        panRef.current = { startX: e.touches[0].clientX - panX, startY: e.touches[0].clientY - panY };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchRef.current) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const newDist = Math.hypot(dx, dy);
+        const newScale = Math.min(3, Math.max(0.3, pinchRef.current.scale * (newDist / pinchRef.current.dist)));
+        setScale(newScale);
+      } else if (e.touches.length === 1 && panRef.current) {
+        setPanX(e.touches[0].clientX - panRef.current.startX);
+        setPanY(e.touches[0].clientY - panRef.current.startY);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      pinchRef.current = null;
+      panRef.current = null;
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [scale, panX, panY]);
 
   const canvasXY = (clientX: number, clientY: number) => {
     const el = canvasRef.current;
@@ -244,6 +296,7 @@ const Board = React.memo(function Board() {
         <span className="board-hint">drag to create · drag dots for arrows</span>
       </div>
       <div ref={canvasRef} className="board-canvas" onMouseDown={handleCanvasMouseDown}>
+        <div className="board-canvas-inner" style={{ transform: `scale(${scale}) translate(${panX}px, ${panY}px)`, transformOrigin: '0 0' }}>
         <svg className="board-arrows">
           {connections.map(conn => {
             const from = blocks.find(b => b.id === conn.fromId);
@@ -295,6 +348,7 @@ const Board = React.memo(function Board() {
         {blocks.length === 0 && !drawPreview && (
           <div className="board-empty">drag to create a block</div>
         )}
+        </div>
       </div>
     </div>
   );
