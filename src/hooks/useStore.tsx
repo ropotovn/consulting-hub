@@ -39,15 +39,18 @@ function sv(k: string, d: any) { try { localStorage.setItem(k, JSON.stringify(d)
 function fixMojibake(obj: any): any {
   if (typeof obj === 'string') {
     let s = obj;
-    // Pass 1: UTF-8 as Latin-1
-    for (let i = 0; i < 5; i++) {
-      try {
-        const fixed = new TextDecoder().decode(
-          Uint8Array.from(s, (c: string) => c.charCodeAt(0))
-        );
-        if (fixed === s) break;
-        s = fixed;
-      } catch { break; }
+    const hasCyrillic = /[\u0400-\u04FF]/.test(s);
+    // Pass 1: UTF-8 as Latin-1 — only if no Cyrillic detected (clean text already has Cyrillic)
+    if (!hasCyrillic) {
+      for (let i = 0; i < 5; i++) {
+        try {
+          const fixed = new TextDecoder().decode(
+            Uint8Array.from(s, (c: string) => c.charCodeAt(0))
+          );
+          if (fixed === s) break;
+          s = fixed;
+        } catch { break; }
+      }
     }
     // Pass 2: KOI8-R with stripped high bit (A-Z, @, [, etc. → Cyrillic)
     if (/[@A-Z\[\]\\^_]{2,}/.test(s)) {
