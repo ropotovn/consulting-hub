@@ -59,6 +59,12 @@
         "authorName": "Никита",
         "text": "100 проц надо найти респондентов",
         "createdAt": "2026-08-10T21:25:14.549Z"
+      },
+      {
+        "id": "cmsij7659",
+        "author": "alex",
+        "text": "проведем 100 проц",
+        "createdAt": "2026-08-07T05:55:53.949Z"
       }
     ]
   },
@@ -143,7 +149,7 @@
     "id": "tmsnjdi1qv5j4",
     "title": "Регистрация на ФЛ и прочей херне",
     "description": "",
-    "status": "todo",
+    "status": "doing",
     "priority": "now",
     "tags": [],
     "assignee": "sanya",
