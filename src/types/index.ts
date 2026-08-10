@@ -9,6 +9,7 @@ export interface TaskComment {
   authorName: string;
   text: string;
   createdAt: string;
+  editedAt?: string;
 }
 
 export interface Task {

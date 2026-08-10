@@ -22,6 +22,8 @@ const TaskForm: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
   const [commentAs, setCommentAs] = useState<Assignee>(currentUser || 'nikita');
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
 
   // Sync commentAs when Telegram user detected
   useEffect(() => {
@@ -62,6 +64,22 @@ const TaskForm: React.FC = () => {
     };
     setTaskComments(prev => [...prev, comment]);
     setCommentText('');
+  };
+
+  const startEditComment = (c: TaskComment) => {
+    setEditingCommentId(c.id);
+    setEditingCommentText(c.text);
+  };
+  const saveEditComment = () => {
+    if (!editingCommentId || !editingCommentText.trim()) return;
+    setTaskComments(prev => prev.map(c => c.id === editingCommentId
+      ? { ...c, text: editingCommentText.trim(), editedAt: new Date().toISOString() }
+      : c));
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+  const deleteCommentLocal = (cid: string) => {
+    setTaskComments(prev => prev.filter(c => c.id !== cid));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -164,11 +182,35 @@ const TaskForm: React.FC = () => {
                 </span>
               </div>
               {taskComments.map(c => (
-                <div key={c.id} className="comment-item">
+                <div key={c.id} className="comment-item"
+                  onMouseEnter={(e) => {
+                    (e.currentTarget.querySelector('.comment-actions') as HTMLElement).style.opacity = '1';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget.querySelector('.comment-actions') as HTMLElement).style.opacity = '0';
+                  }}
+                >
                   <div className="comment-author">
                     {c.authorName} · {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {c.editedAt && <span className="comment-edited"> (edited)</span>}
                   </div>
-                  <div className="comment-text">{c.text}</div>
+                  {editingCommentId === c.id ? (
+                    <div className="comment-edit-row">
+                      <input className="input" value={editingCommentText} onChange={e => setEditingCommentText(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); saveEditComment(); } if (e.key === 'Escape') setEditingCommentId(null); }}
+                        autoFocus />
+                      <button type="button" className="btn-primary btn-xs" onClick={saveEditComment}>✓</button>
+                      <button type="button" className="btn-ghost btn-xs" onClick={() => setEditingCommentId(null)}>✕</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="comment-text">{c.text}</div>
+                      <div className="comment-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: 4, marginTop: 4 }}>
+                        <button type="button" className="btn-ghost btn-xs" onClick={() => startEditComment(c)} title="Edit">✎</button>
+                        <button type="button" className="btn-ghost btn-xs" onClick={() => deleteCommentLocal(c.id)} title="Delete">✕</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
               {taskComments.length === 0 && (
