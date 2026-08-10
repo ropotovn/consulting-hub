@@ -123,7 +123,7 @@
     "id": "t6",
     "title": "Сравнить аналоги: ценовой анализ",
     "description": "Собрать 5-7 конкурентов, расписать их цены и модели монетизации. Таблица.",
-    "status": "doing",
+    "status": "done",
     "priority": "later",
     "tags": [
       "marketing",
@@ -135,11 +135,11 @@
     "createdBy": "agent",
     "comments": [
       {
-        "id": "cmsl22tos",
+        "id": "cmsnhkssi",
         "author": "nikita",
         "authorName": "Никита",
-        "text": "тест",
-        "createdAt": "2026-08-09T00:19:56.236Z"
+        "text": "тестовый комм заговоренный на деплой",
+        "createdAt": "2026-08-10T17:09:21.474Z"
       }
     ]
   },
