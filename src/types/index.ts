@@ -90,6 +90,19 @@ export const STATUS_DOT: Record<TaskStatus, string> = {
 
 export type View = 'tasks' | 'kb' | 'board';
 
+export type NotifType = 'comment' | 'status' | 'assign';
+
+export interface Notification {
+  id: string;
+  type: NotifType;
+  taskId: string;
+  taskTitle: string;
+  actor: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
+
 export interface BoardBlock {
   id: string;
   x: number;

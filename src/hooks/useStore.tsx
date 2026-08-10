@@ -1,14 +1,18 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import type { Task, Note, NoteComment, View, TaskStatus, Priority } from '../types';
+import type { Task, Note, NoteComment, View, TaskStatus, Priority, Notification } from '../types';
 import { sampleTasks, sampleNotes } from '../data/sampleData';
 import { loadRemoteNotes, loadRemoteTasks, syncToRemote } from '../githubSync';
 
 const STORAGE_KEY_TASKS = 'consulting_hub_tasks';
 const STORAGE_KEY_NOTES = 'consulting_hub_notes';
 const STORAGE_KEY_DELETED = 'consulting_hub_deleted';
+const STORAGE_KEY_NOTIFS = 'consulting_hub_notifs';
+
+function newNotifId(): string { return 'ev' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 interface Store {
   tasks: Task[]; notes: Note[]; view: View;
+  notifications: Notification[]; unreadCount: number;
   setView: (v: View) => void;
   addTask: (t: Task) => void;
   updateTask: (id: string, u: Partial<Task>) => void;
@@ -20,6 +24,8 @@ interface Store {
   updateNoteComment: (noteId: string, cid: string, text: string) => void;
   deleteNoteComment: (noteId: string, cid: string) => void;
   togglePinNote: (id: string) => void;
+  markNotifRead: (id: string) => void;
+  markAllNotifsRead: () => void;
   filterStatus: TaskStatus | 'all'; setFilterStatus: (s: TaskStatus | 'all') => void;
   filterPriority: Priority | 'all'; setFilterPriority: (p: Priority | 'all') => void;
   filterAssignee: string; setFilterAssignee: (a: string) => void;
@@ -88,6 +94,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>(() => ld(STORAGE_KEY_NOTIFS, []));
+
+  const addNotif = useCallback((type: Notification['type'], taskId: string, taskTitle: string, actor: string, message: string) => {
+    setNotifications(prev => {
+      const n: Notification = { id: newNotifId(), type, taskId, taskTitle, actor, message, createdAt: new Date().toISOString(), read: false };
+      return [n, ...prev].slice(0, 50);
+    });
+  }, []);
+
+  const markNotifRead = useCallback((id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  }, []);
+  const markAllNotifsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, []);
 
   // Sync function — pulls remote data and merges with local
   const syncFromRemote = useCallback(async () => {
@@ -155,9 +176,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { sv(STORAGE_KEY_TASKS, tasks); }, [tasks]);
   useEffect(() => { sv(STORAGE_KEY_NOTES, notes); }, [notes]);
+  useEffect(() => { sv(STORAGE_KEY_NOTIFS, notifications); }, [notifications]);
 
   const at = useCallback((t: Task) => setTasks(p => { const n = [t, ...p]; syncToRemote('tasks.json', n); return n; }), []);
-  const ut = useCallback((id: string, u: Partial<Task>) => setTasks(p => { const n = p.map(t => t.id === id ? { ...t, ...u } : t); syncToRemote('tasks.json', n); return n; }), []);
+  const ut = useCallback((id: string, u: Partial<Task>) => setTasks(p => {
+    const oldTask = p.find(t => t.id === id);
+    const n = p.map(t => t.id === id ? { ...t, ...u } : t);
+    syncToRemote('tasks.json', n);
+    // Generate notifications
+    if (oldTask) {
+      if (u.status && u.status !== oldTask.status) {
+        addNotif('status', id, oldTask.title, '', `${oldTask.status} → ${u.status}`);
+      }
+      if (u.comments && u.comments.length > (oldTask.comments || []).length) {
+        const newComment = u.comments[u.comments.length - 1];
+        addNotif('comment', id, oldTask.title, newComment.authorName, newComment.text.slice(0, 80));
+      }
+    }
+    return n;
+  }), [addNotif]);
   const dt = useCallback((id: string) => setTasks(p => { const n = p.filter(t => t.id !== id); syncToRemote('tasks.json', n); return n; }), []);
   const an = useCallback((n: Note) => setNotes(p => { const nx = [n, ...p]; syncToRemote('notes.json', nx); return nx; }), []);
   const un = useCallback((id: string, u: Partial<Note>) => setNotes(p => { const nx = p.map(n => n.id === id ? { ...n, ...u } : n); syncToRemote('notes.json', nx); return nx; }), []);
@@ -170,7 +207,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const dnc = useCallback((nid: string, cid: string) => setNotes(p => { const nx = p.map(n => n.id === nid ? { ...n, comments: (n.comments || []).filter(c => c.id !== cid) } : n); syncToRemote('notes.json', nx); return nx; }), []);
   const tpn = useCallback((id: string) => setNotes(p => { const nx = p.map(n => n.id === id ? { ...n, pinned: !n.pinned } : n); syncToRemote('notes.json', nx); return nx; }), []);
 
-  return React.createElement(StoreContext.Provider, { value: { tasks, notes, view, setView, addTask: at, updateTask: ut, deleteTask: dt, addNote: an, updateNote: un, deleteNote: dn, addNoteComment: anc, updateNoteComment: unc, deleteNoteComment: dnc, togglePinNote: tpn, filterStatus, setFilterStatus, filterPriority, setFilterPriority, filterAssignee, setFilterAssignee, selectedNoteId, setSelectedNoteId, editingNoteId, setEditingNoteId, showTaskForm, setShowTaskForm, editingTask, setEditingTask }}, children);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return React.createElement(StoreContext.Provider, { value: { tasks, notes, view, notifications, unreadCount, setView, addTask: at, updateTask: ut, deleteTask: dt, addNote: an, updateNote: un, deleteNote: dn, addNoteComment: anc, updateNoteComment: unc, deleteNoteComment: dnc, togglePinNote: tpn, markNotifRead, markAllNotifsRead, filterStatus, setFilterStatus, filterPriority, setFilterPriority, filterAssignee, setFilterAssignee, selectedNoteId, setSelectedNoteId, editingNoteId, setEditingNoteId, showTaskForm, setShowTaskForm, editingTask, setEditingTask }}, children);
 }
 
 export function useStore() {

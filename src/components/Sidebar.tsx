@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../hooks/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { changelog } from '../changelog';
+import NotificationBell from './NotificationBell';
 
 const Sidebar: React.FC = () => {
   const { view, setView, notes } = useStore();
@@ -34,6 +35,7 @@ const Sidebar: React.FC = () => {
           Knowledge <span className="nav-count">{notes.length}</span>
         </button>
         <button className={`nav-item ${view === 'board' ? 'active' : ''}`} onClick={() => setView('board')}>Board</button>
+        <NotificationBell />
       </nav>
 
       <div className="theme-picker">
