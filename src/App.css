@@ -534,37 +534,37 @@ select.input { cursor: pointer; appearance: none; }
 
 .kb-file-item {
   display: flex; align-items: center; gap: 5px;
-  padding: 3px 6px; border-radius: var(--radius-sm);
+  padding: 4px 6px; border-radius: var(--radius-sm);
   font-size: 11px; cursor: pointer; color: var(--text-secondary);
   transition: background 0.1s; font-family: var(--font-ui);
+  line-height: 1.4;
 }
 .kb-file-item:hover { background: var(--bg-hover); color: var(--text); }
 .kb-file-item.active { background: var(--bg-active); color: var(--text); font-weight: 500; }
 
-.kb-file-icon { font-size: 10px; color: var(--text-muted); width: 12px; text-align: center; }
+.kb-file-icon { font-size: 10px; color: var(--text-muted); width: 12px; text-align: center; flex-shrink: 0; }
+.kb-file-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
 .kb-badge-new {
   font-size: 8px; font-weight: 600; color: #fff; background: #22c55e;
   font-family: var(--font-mono); text-transform: uppercase;
-  margin-left: 4px; padding: 1px 5px; border-radius: 3px;
-  line-height: 1.3;
+  padding: 1px 5px; border-radius: 3px; line-height: 1.3; flex-shrink: 0;
 }
 
 .kb-badge-comment {
   font-size: 9px; color: var(--bg); background: var(--text);
   border-radius: 8px; padding: 0 5px; font-family: var(--font-mono);
-  margin-left: auto; margin-right: 4px; min-width: 16px; text-align: center;
-  line-height: 1.4;
+  min-width: 16px; text-align: center; line-height: 1.4; flex-shrink: 0;
 }
 
 .kb-pin-btn {
-  opacity: 0; background: none; border: 1px solid var(--border);
-  cursor: pointer; font-size: 9px; padding: 0 3px; transition: all 0.15s;
-  border-radius: 2px; color: var(--text-muted); margin-left: 2px;
-  font-family: var(--font-mono);
+  opacity: 0; background: none; border: none;
+  cursor: pointer; padding: 2px; transition: all 0.15s;
+  border-radius: 2px; color: var(--text-muted); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
 .kb-file-item:hover .kb-pin-btn { opacity: 1; }
-.kb-pin-btn:hover { background: var(--bg-hover); color: var(--text); border-color: var(--text); }
+.kb-pin-btn:hover { background: var(--bg-hover); color: var(--text); }
 
 .kb-note-panel { flex: 1; overflow-y: auto; }
 
@@ -668,6 +668,21 @@ mark.kb-highlight:hover {
 }
 
 .kb-note-content { padding: 4px 0; }
+
+/* Markdown tables */
+.markdown-body table {
+  border-collapse: collapse; width: 100%; margin: 12px 0;
+  font-size: 11px; font-family: var(--font-ui);
+}
+.markdown-body th, .markdown-body td {
+  border: 1px solid var(--border); padding: 6px 8px;
+  text-align: left; vertical-align: top;
+}
+.markdown-body th {
+  background: var(--bg-secondary); font-weight: 600;
+  font-family: var(--font-mono); font-size: 10px;
+}
+.markdown-body tr:nth-child(even) td { background: var(--bg-secondary); }
 
 .kb-backlinks {
   margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border);
@@ -1175,15 +1190,15 @@ mark.kb-highlight:hover {
   }
 
   .kb-file-item {
-    font-size: 10px;
-    white-space: nowrap;
-    padding: 3px 8px;
-    flex-shrink: 0;
+    font-size: 10px; white-space: nowrap;
+    padding: 3px 8px; flex-shrink: 0;
   }
 
-  .kb-note-panel {
-    max-width: 100%;
-  }
+  .kb-note-panel { padding: 0 8px; max-width: 100%; }
+  .kb-note-layout { flex-direction: column; gap: 16px; }
+  .kb-refs { width: 100%; min-width: 0; padding-top: 0; border-top: 1px solid var(--border-light); padding-top: 12px; }
+  .kb-comment-item { padding: 6px 8px; }
+  .kb-note-main .kb-note-header { flex-wrap: wrap; gap: 4px; }
 
   .form-row {
     grid-template-columns: 1fr;

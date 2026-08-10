@@ -178,11 +178,13 @@ const KnowledgeBase: React.FC = () => {
           return (
           <div key={note.id} className={`kb-file-item ${selectedNoteId === note.id ? 'active' : ''}`} onClick={() => setSelectedNoteId(note.id)}>
             <span className="kb-file-icon">{note.pinned ? '◆' : '·'}</span>
-            {note.title}
+            <span className="kb-file-title">{note.title}</span>
             {isNew && <span className="kb-badge-new">new</span>}
             {commentCount > 0 && <span className="kb-badge-comment" title={`${commentCount} comment${commentCount > 1 ? 's' : ''}${lastAuthor ? ' by ' + lastAuthor : ''}`}>{commentCount}</span>}
             <button className="kb-pin-btn" onClick={(e) => { e.stopPropagation(); togglePinNote(note.id); }} title={note.pinned ? 'Unpin' : 'Pin'}>
-              {note.pinned ? 'unpin' : 'pin'}
+              <svg width="10" height="10" viewBox="0 0 10 10" fill={note.pinned ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.2">
+                <path d="M5 1L5 8M3 2L7 2L6.5 4L6.5 7L3.5 7L3.5 4Z" />
+              </svg>
             </button>
           </div>
         );})}
