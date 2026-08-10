@@ -47,52 +47,62 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Merge remote data on load — keep local changes, add remote additions
-  useEffect(() => {
-    (async () => {
-      try {
-        const [nd, td] = await Promise.all([loadRemoteNotes(), loadRemoteTasks()]);
-        const remoteTasks: Task[] = td;
-        const remoteNotes: Note[] = nd;
-        const dl: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
-        
-        // Merge tasks: remote additions + local changes preserved
-        setTasks(prev => {
-          const remoteMap = new Map<string, Task>(remoteTasks.filter(t => !dl.includes(t.id)).map(t => [t.id, t]));
-          const localMap = new Map<string, Task>(prev.map(t => [t.id, t]));
-          const merged: Task[] = prev.map(t => {
-            const remote = remoteMap.get(t.id);
-            // Remote updates: status, priority, deadline etc. But keep local comments
-            if (remote) return { ...remote, comments: t.comments };
-            return t;
-          });
-          // Add remote tasks not in local
-          for (const [id, t] of remoteMap) { if (!localMap.has(id)) merged.push(t); }
-          return merged;
+  // Sync function — pulls remote data and merges with local
+  const syncFromRemote = useCallback(async () => {
+    try {
+      const [nd, td] = await Promise.all([loadRemoteNotes(), loadRemoteTasks()]);
+      const remoteTasks: Task[] = td;
+      const remoteNotes: Note[] = nd;
+      const dl: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      
+      setTasks(prev => {
+        const remoteMap = new Map<string, Task>(remoteTasks.filter(t => !dl.includes(t.id)).map(t => [t.id, t]));
+        const localMap = new Map<string, Task>(prev.map(t => [t.id, t]));
+        const merged: Task[] = prev.map(t => {
+          const remote = remoteMap.get(t.id);
+          if (remote) return { ...remote, comments: t.comments };
+          return t;
         });
-        
-        setNotes(prev => {
-          const remoteMap = new Map<string, Note>(remoteNotes.filter(n => !dl.includes(n.id)).map(n => [n.id, n]));
-          const localMap = new Map<string, Note>(prev.map(n => [n.id, n]));
-          const merged: Note[] = prev.map(n => {
-            const remote = remoteMap.get(n.id);
-            if (remote) {
-              // Merge: remote content + pins, but keep local comments that are newer
-              const remoteCommentIds = new Set((remote.comments || []).map(c => c.id));
-              const mergedComments = [
-                ...(remote.comments || []),
-                ...(n.comments || []).filter(c => !remoteCommentIds.has(c.id))
-              ];
-              return { ...remote, comments: mergedComments, pinned: n.pinned ?? remote.pinned };
-            }
-            return n;
-          });
-          for (const [id, n] of remoteMap) { if (!localMap.has(id)) merged.push(n); }
-          return merged;
+        for (const [id, t] of remoteMap) { if (!localMap.has(id)) merged.push(t); }
+        return merged;
+      });
+      
+      setNotes(prev => {
+        const remoteMap = new Map<string, Note>(remoteNotes.filter(n => !dl.includes(n.id)).map(n => [n.id, n]));
+        const localMap = new Map<string, Note>(prev.map(n => [n.id, n]));
+        const merged: Note[] = prev.map(n => {
+          const remote = remoteMap.get(n.id);
+          if (remote) {
+            const remoteCommentIds = new Set((remote.comments || []).map(c => c.id));
+            const mergedComments = [
+              ...(remote.comments || []),
+              ...(n.comments || []).filter(c => !remoteCommentIds.has(c.id))
+            ];
+            return { ...remote, comments: mergedComments, pinned: n.pinned ?? remote.pinned };
+          }
+          return n;
         });
-      } catch {}
-    })();
+        for (const [id, n] of remoteMap) { if (!localMap.has(id)) merged.push(n); }
+        return merged;
+      });
+    } catch {}
   }, []);
+
+  // Initial sync on mount
+  useEffect(() => { syncFromRemote(); }, [syncFromRemote]);
+
+  // Sync when user switches back to this tab
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') syncFromRemote(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [syncFromRemote]);
+
+  // Background polling every 30 seconds
+  useEffect(() => {
+    const id = setInterval(syncFromRemote, 30_000);
+    return () => clearInterval(id);
+  }, [syncFromRemote]);
 
   useEffect(() => { sv(STORAGE_KEY_TASKS, tasks); }, [tasks]);
   useEffect(() => { sv(STORAGE_KEY_NOTES, notes); }, [notes]);
