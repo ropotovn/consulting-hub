@@ -32,15 +32,15 @@
       {
         "id": "cmsjr1shd",
         "author": "sanya",
-        "authorName": "Ð¡Ð°Ð½Ñ",
-        "text": "Ñ ÑÐ°ÑÐ° Ñ ÑÑÐ°ÑÑÐ°Ð¿ÐµÑ",
+        "authorName": "Саня",
+        "text": "я саша я стартапер",
         "createdAt": "2026-08-08T02:23:26.065Z"
       },
       {
         "id": "cmsjr23zs",
         "author": "nikita",
-        "authorName": "ÐÐ¸ÐºÐ¸ÑÐ°",
-        "text": "Ð¢ÑÑ ÑÐ°Ð±Ð¾ÑÐ°Ñ, ÑÐºÐ¾ÑÐ¾ Ð±ÑÐ´ÐµÑ",
+        "authorName": "Никита",
+        "text": "Тут работаю, скоро будет",
         "createdAt": "2026-08-08T02:23:40.984Z"
       }
     ]
@@ -63,27 +63,27 @@
       {
         "id": "cmsij7659",
         "author": "alex",
-        "text": "Ð¿ÑÐ¾Ð²ÐµÐ´ÐµÐ¼ 100 Ð¿ÑÐ¾Ñ",
+        "text": "проведем 100 проц",
         "createdAt": "2026-08-07T05:55:53.949Z"
       },
       {
         "id": "cmsij7cfa",
         "author": "alex",
-        "text": "Ñ",
+        "text": "ы",
         "createdAt": "2026-08-07T05:56:02.086Z"
       },
       {
         "id": "cmsij7fzx",
         "author": "sanya",
-        "authorName": "Ð¡Ð°Ð½Ñ",
-        "text": "Ð¿",
+        "authorName": "Саня",
+        "text": "п",
         "createdAt": "2026-08-07T05:56:06.717Z"
       },
       {
         "id": "cmsij7lm9",
         "author": "nikita",
-        "authorName": "ÐÐ¸ÐºÐ¸ÑÐ°",
-        "text": "Ð³Ñ",
+        "authorName": "Никита",
+        "text": "гы",
         "createdAt": "2026-08-07T05:56:14.001Z"
       }
     ]
@@ -160,15 +160,15 @@
       {
         "id": "cmsjqhee0",
         "author": "nikita",
-        "authorName": "ÐÐ¸ÐºÐ¸ÑÐ°",
-        "text": "ÐºÑ",
+        "authorName": "Никита",
+        "text": "ку",
         "createdAt": "2026-08-08T02:07:34.680Z"
       },
       {
         "id": "cmsjqi6jw",
         "author": "sanya",
-        "authorName": "Ð¡Ð°Ð½Ñ",
-        "text": "ÐºÑÐºÑ",
+        "authorName": "Саня",
+        "text": "куку",
         "createdAt": "2026-08-08T02:08:11.180Z"
       }
     ]
