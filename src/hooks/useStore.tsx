@@ -60,7 +60,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const localMap = new Map<string, Task>(prev.map(t => [t.id, t]));
         const merged: Task[] = prev.map(t => {
           const remote = remoteMap.get(t.id);
-          if (remote) return { ...remote, comments: t.comments };
+          if (remote) {
+            const remoteCommentIds = new Set((remote.comments || []).map(c => c.id));
+            const mergedComments = [
+              ...(remote.comments || []),
+              ...(t.comments || []).filter(c => !remoteCommentIds.has(c.id))
+            ];
+            return { ...remote, comments: mergedComments };
+          }
           return t;
         });
         for (const [id, t] of remoteMap) { if (!localMap.has(id)) merged.push(t); }
