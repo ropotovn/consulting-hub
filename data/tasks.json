@@ -52,7 +52,15 @@
     "deadline": "2026-08-18",
     "createdAt": "2026-08-07T09:00:00Z",
     "createdBy": "agent",
-    "comments": []
+    "comments": [
+      {
+        "id": "cmsnqpvat",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "100 проц надо найти респондентов",
+        "createdAt": "2026-08-10T21:25:14.549Z"
+      }
+    ]
   },
   {
     "id": "t4",
