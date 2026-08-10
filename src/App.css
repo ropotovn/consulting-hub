@@ -21,10 +21,18 @@
   --radius: 6px;
   --radius-sm: 4px;
   --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-html, body, #root { height: 100%; overflow: hidden; }
+/* Telegram theme overrides */
+body.tg-light {
+  --bg: var(--tg-theme-bg-color, #fff);
+  --text: var(--tg-theme-text-color, #0d0d0d);
+  --text-secondary: var(--tg-theme-hint-color, #999);
+  --accent: var(--tg-theme-button-color, #0d0d0d);
+  --bg-secondary: var(--tg-theme-secondary-bg-color, #f8f8f8);
+}
 
 body {
   font-family: var(--font-ui);
@@ -815,22 +823,33 @@ mark.kb-highlight:hover {
   display: none;
   position: fixed; bottom: 0; left: 0; right: 0;
   background: var(--bg); border-top: 1px solid var(--border);
-  padding: 4px 0 env(safe-area-inset-bottom, 0);
+  padding: 6px 0 calc(6px + var(--safe-bottom));
   z-index: 50;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-nav-inner {
   display: flex; justify-content: space-around; align-items: center;
+  max-width: 480px; margin: 0 auto;
 }
 
 .mobile-nav-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 3px 10px; border: none; background: none;
-  color: var(--text-muted); font-size: 9px; font-family: var(--font-mono);
-  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 4px 12px; border: none; background: none;
+  color: var(--text-muted); font-size: 10px; font-family: var(--font-ui);
+  cursor: pointer; transition: color 0.15s; -webkit-tap-highlight-color: transparent;
+  min-width: 56px;
 }
-.mobile-nav-btn.active { color: var(--text); font-weight: 600; }
-.mobile-nav-btn-icon { font-size: 14px; }
+.mobile-nav-btn.active { color: var(--text); font-weight: 500; }
+.mobile-nav-label { font-size: 9px; letter-spacing: -0.01em; }
+.mobile-badge {
+  position: absolute; top: 0; right: 4px;
+  background: var(--danger); color: #fff;
+  font-size: 9px; font-weight: 600; font-family: var(--font-mono);
+  min-width: 16px; height: 16px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+}
 
 /* Mobile theme strip */
 .mobile-theme-strip {

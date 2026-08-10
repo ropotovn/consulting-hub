@@ -7,12 +7,13 @@ import TaskBoard from './components/TaskBoard';
 import TaskForm from './components/TaskForm';
 import KnowledgeBase from './components/KnowledgeBase';
 import NoteEdit from './components/NoteEdit';
+import MobileNav from './components/MobileNav';
 import './App.css';
 
 const Board = lazy(() => import('./components/Board'));
 
 const AppInner: React.FC = () => {
-  const { view, showTaskForm, editingNoteId, setView } = useStore();
+  const { view, showTaskForm, editingNoteId } = useStore();
   const { isReady } = useTelegram();
   const { theme, setTheme, themes } = useTheme();
 
@@ -50,31 +51,7 @@ const AppInner: React.FC = () => {
       {editingNoteId && <NoteEdit />}
 
       {/* Mobile bottom nav */}
-      <nav className="mobile-nav">
-        <div className="mobile-nav-inner">
-          <button
-            className={`mobile-nav-btn ${view === 'tasks' ? 'active' : ''}`}
-            onClick={() => setView('tasks')}
-          >
-            <span className="mobile-nav-btn-icon">=</span>
-            Tasks
-          </button>
-          <button
-            className={`mobile-nav-btn ${view === 'kb' ? 'active' : ''}`}
-            onClick={() => setView('kb')}
-          >
-            <span className="mobile-nav-btn-icon">#</span>
-            Knowledge
-          </button>
-          <button
-            className={`mobile-nav-btn ${view === 'board' ? 'active' : ''}`}
-            onClick={() => setView('board')}
-          >
-            <span className="mobile-nav-btn-icon">+</span>
-            Board
-          </button>
-        </div>
-      </nav>
+      <MobileNav />
     </div>
   );
 };
