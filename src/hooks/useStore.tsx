@@ -31,9 +31,33 @@ interface Store {
 
 const StoreContext = createContext<Store | null>(null);
 function ld<T>(k: string, fb: T): T {
-  try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; }
+  try { const r = localStorage.getItem(k); return r ? fixMojibake(JSON.parse(r)) : fb; } catch { return fb; }
 }
 function sv(k: string, d: any) { try { localStorage.setItem(k, JSON.stringify(d)); } catch {} }
+
+// Detect and fix mojibake (UTF-8 bytes interpreted as Latin-1)
+function fixMojibake(obj: any): any {
+  if (typeof obj === 'string') {
+    let s = obj;
+    for (let i = 0; i < 5; i++) {
+      try {
+        const fixed = new TextDecoder().decode(
+          Uint8Array.from(s, (c: string) => c.charCodeAt(0))
+        );
+        if (fixed === s) break;
+        s = fixed;
+      } catch { break; }
+    }
+    return s;
+  }
+  if (Array.isArray(obj)) return obj.map(fixMojibake);
+  if (obj && typeof obj === 'object') {
+    const out: any = {};
+    for (const k of Object.keys(obj)) out[k] = fixMojibake(obj[k]);
+    return out;
+  }
+  return obj;
+}
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>(() => ld(STORAGE_KEY_TASKS, sampleTasks));
@@ -51,8 +75,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const syncFromRemote = useCallback(async () => {
     try {
       const [nd, td] = await Promise.all([loadRemoteNotes(), loadRemoteTasks()]);
-      const remoteTasks: Task[] = td;
-      const remoteNotes: Note[] = nd;
+      const remoteTasks: Task[] = fixMojibake(td);
+      const remoteNotes: Note[] = fixMojibake(nd);
       const dl: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
       
       setTasks(prev => {
