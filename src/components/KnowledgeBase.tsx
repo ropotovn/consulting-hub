@@ -170,7 +170,7 @@ const KnowledgeBase: React.FC = () => {
         {[...notes].sort((a, b) => {
           if (a.pinned && !b.pinned) return -1;
           if (!a.pinned && b.pinned) return 1;
-          return 0;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }).map(note => {
           const isNew = (Date.now() - new Date(note.createdAt).getTime()) < 172800000;
           const commentCount = (note.comments || []).length;
