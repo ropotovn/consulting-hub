@@ -133,7 +133,15 @@
     "deadline": null,
     "createdAt": "2026-08-07T11:00:00Z",
     "createdBy": "agent",
-    "comments": []
+    "comments": [
+      {
+        "id": "cmsl22tos",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "тест",
+        "createdAt": "2026-08-09T00:19:56.236Z"
+      }
+    ]
   },
   {
     "id": "t7",
