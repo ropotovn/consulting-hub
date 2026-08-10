@@ -182,14 +182,7 @@ const TaskForm: React.FC = () => {
                 </span>
               </div>
               {taskComments.map(c => (
-                <div key={c.id} className="comment-item"
-                  onMouseEnter={(e) => {
-                    (e.currentTarget.querySelector('.comment-actions') as HTMLElement).style.opacity = '1';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget.querySelector('.comment-actions') as HTMLElement).style.opacity = '0';
-                  }}
-                >
+                <div key={c.id} className="comment-item">
                   <div className="comment-author">
                     {c.authorName} · {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     {c.editedAt && <span className="comment-edited"> (edited)</span>}
@@ -203,13 +196,13 @@ const TaskForm: React.FC = () => {
                       <button type="button" className="btn-ghost btn-xs" onClick={() => setEditingCommentId(null)}>✕</button>
                     </div>
                   ) : (
-                    <>
+                    <div className="comment-body">
                       <div className="comment-text">{c.text}</div>
-                      <div className="comment-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: 4, marginTop: 4 }}>
+                      <div className="comment-actions">
                         <button type="button" className="btn-ghost btn-xs" onClick={() => startEditComment(c)} title="Edit">✎</button>
                         <button type="button" className="btn-ghost btn-xs" onClick={() => deleteCommentLocal(c.id)} title="Delete">✕</button>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               ))}
