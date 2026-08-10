@@ -18,7 +18,7 @@
     "id": "t2",
     "title": "Собрать лендинг на конструкторе",
     "description": "Быстрый лендинг на Tilda/Webflow для проверки спроса. 3 экрана: проблема, решение, CTA.",
-    "status": "doing",
+    "status": "done",
     "priority": "now",
     "tags": [
       "marketing",
@@ -32,15 +32,15 @@
       {
         "id": "cmsjr1shd",
         "author": "sanya",
-        "authorName": "Саня",
-        "text": "я саша я стартапер",
+        "authorName": "Ð¡Ð°Ð½Ñ",
+        "text": "Ñ ÑÐ°ÑÐ° Ñ ÑÑÐ°ÑÑÐ°Ð¿ÐµÑ",
         "createdAt": "2026-08-08T02:23:26.065Z"
       },
       {
         "id": "cmsjr23zs",
         "author": "nikita",
-        "authorName": "Никита",
-        "text": "Тут работаю, скоро будет",
+        "authorName": "ÐÐ¸ÐºÐ¸ÑÐ°",
+        "text": "Ð¢ÑÑ ÑÐ°Ð±Ð¾ÑÐ°Ñ, ÑÐºÐ¾ÑÐ¾ Ð±ÑÐ´ÐµÑ",
         "createdAt": "2026-08-08T02:23:40.984Z"
       }
     ]
@@ -63,27 +63,27 @@
       {
         "id": "cmsij7659",
         "author": "alex",
-        "text": "проведем 100 проц",
+        "text": "Ð¿ÑÐ¾Ð²ÐµÐ´ÐµÐ¼ 100 Ð¿ÑÐ¾Ñ",
         "createdAt": "2026-08-07T05:55:53.949Z"
       },
       {
         "id": "cmsij7cfa",
         "author": "alex",
-        "text": "ы",
+        "text": "Ñ",
         "createdAt": "2026-08-07T05:56:02.086Z"
       },
       {
         "id": "cmsij7fzx",
         "author": "sanya",
-        "authorName": "Саня",
-        "text": "п",
+        "authorName": "Ð¡Ð°Ð½Ñ",
+        "text": "Ð¿",
         "createdAt": "2026-08-07T05:56:06.717Z"
       },
       {
         "id": "cmsij7lm9",
         "author": "nikita",
-        "authorName": "Никита",
-        "text": "гы",
+        "authorName": "ÐÐ¸ÐºÐ¸ÑÐ°",
+        "text": "Ð³Ñ",
         "createdAt": "2026-08-07T05:56:14.001Z"
       }
     ]
@@ -135,11 +135,11 @@
     "createdBy": "agent",
     "comments": [
       {
-        "id": "cmsl22tos",
+        "id": "cmsnhkssi",
         "author": "nikita",
         "authorName": "Никита",
-        "text": "тест",
-        "createdAt": "2026-08-09T00:19:56.236Z"
+        "text": "тестовый комм заговоренный на деплой",
+        "createdAt": "2026-08-10T17:09:21.474Z"
       }
     ]
   },
@@ -160,15 +160,15 @@
       {
         "id": "cmsjqhee0",
         "author": "nikita",
-        "authorName": "Никита",
-        "text": "ку",
+        "authorName": "ÐÐ¸ÐºÐ¸ÑÐ°",
+        "text": "ÐºÑ",
         "createdAt": "2026-08-08T02:07:34.680Z"
       },
       {
         "id": "cmsjqi6jw",
         "author": "sanya",
-        "authorName": "Саня",
-        "text": "куку",
+        "authorName": "Ð¡Ð°Ð½Ñ",
+        "text": "ÐºÑÐºÑ",
         "createdAt": "2026-08-08T02:08:11.180Z"
       }
     ]
