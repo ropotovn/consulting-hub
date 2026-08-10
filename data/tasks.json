@@ -52,14 +52,7 @@
     "deadline": "2026-08-18",
     "createdAt": "2026-08-07T09:00:00Z",
     "createdBy": "agent",
-    "comments": [
-      {
-        "id": "cmsij7659",
-        "author": "alex",
-        "text": "проведем 100 проц",
-        "createdAt": "2026-08-07T05:55:53.949Z"
-      }
-    ]
+    "comments": []
   },
   {
     "id": "t4",
