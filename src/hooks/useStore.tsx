@@ -1,65 +1,43 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { Task, Note, NoteComment, View, TaskStatus, Priority } from '../types';
 import { sampleTasks, sampleNotes } from '../data/sampleData';
+import { loadRemoteNotes, loadRemoteTasks, syncToRemote } from '../githubSync';
 
 const STORAGE_KEY_TASKS = 'consulting_hub_tasks';
 const STORAGE_KEY_NOTES = 'consulting_hub_notes';
-const STORAGE_KEY_SYNCED = 'consulting_hub_synced';
 const STORAGE_KEY_DELETED = 'consulting_hub_deleted';
-const DATA_BASE = import.meta.env.BASE_URL + 'data/';
 
 interface Store {
-  tasks: Task[];
-  notes: Note[];
-  view: View;
+  tasks: Task[]; notes: Note[]; view: View;
   setView: (v: View) => void;
-  addTask: (task: Task) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
+  addTask: (t: Task) => void;
+  updateTask: (id: string, u: Partial<Task>) => void;
   deleteTask: (id: string) => void;
-  addNote: (note: Note) => void;
-  updateNote: (id: string, updates: Partial<Note>) => void;
+  addNote: (n: Note) => void;
+  updateNote: (id: string, u: Partial<Note>) => void;
   deleteNote: (id: string) => void;
-  addNoteComment: (noteId: string, comment: NoteComment) => void;
-  updateNoteComment: (noteId: string, commentId: string, text: string) => void;
-  deleteNoteComment: (noteId: string, commentId: string) => void;
-  togglePinNote: (noteId: string) => void;
-  // filters
-  filterStatus: TaskStatus | 'all';
-  setFilterStatus: (s: TaskStatus | 'all') => void;
-  filterPriority: Priority | 'all';
-  setFilterPriority: (p: Priority | 'all') => void;
-  filterAssignee: string;
-  setFilterAssignee: (a: string) => void;
-  selectedNoteId: string | null;
-  setSelectedNoteId: (id: string | null) => void;
-  editingNoteId: string | null;
-  setEditingNoteId: (id: string | null) => void;
-  showTaskForm: boolean;
-  setShowTaskForm: (s: boolean) => void;
-  editingTask: Task | null;
-  setEditingTask: (t: Task | null) => void;
+  addNoteComment: (noteId: string, c: NoteComment) => void;
+  updateNoteComment: (noteId: string, cid: string, text: string) => void;
+  deleteNoteComment: (noteId: string, cid: string) => void;
+  togglePinNote: (id: string) => void;
+  filterStatus: TaskStatus | 'all'; setFilterStatus: (s: TaskStatus | 'all') => void;
+  filterPriority: Priority | 'all'; setFilterPriority: (p: Priority | 'all') => void;
+  filterAssignee: string; setFilterAssignee: (a: string) => void;
+  selectedNoteId: string | null; setSelectedNoteId: (id: string | null) => void;
+  editingNoteId: string | null; setEditingNoteId: (id: string | null) => void;
+  showTaskForm: boolean; setShowTaskForm: (s: boolean) => void;
+  editingTask: Task | null; setEditingTask: (t: Task | null) => void;
 }
 
 const StoreContext = createContext<Store | null>(null);
-
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
+function ld<T>(k: string, fb: T): T {
+  try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; }
 }
-
-function saveToStorage(key: string, data: any) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch { /* quota exceeded — ignore */ }
-}
+function sv(k: string, d: any) { try { localStorage.setItem(k, JSON.stringify(d)); } catch {} }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>(() => loadFromStorage(STORAGE_KEY_TASKS, sampleTasks));
-  const [notes, setNotes] = useState<Note[]>(() => loadFromStorage(STORAGE_KEY_NOTES, sampleNotes));
+  const [tasks, setTasks] = useState<Task[]>(() => ld(STORAGE_KEY_TASKS, sampleTasks));
+  const [notes, setNotes] = useState<Note[]>(() => ld(STORAGE_KEY_NOTES, sampleNotes));
   const [view, setView] = useState<View>('tasks');
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all');
   const [filterPriority, setFilterPriority] = useState<Priority | 'all'>('all');
@@ -69,119 +47,75 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Sync with remote data from GitHub repo
+  // Merge remote data on load — keep local changes, add remote additions
   useEffect(() => {
-    async function sync() {
+    (async () => {
       try {
-        const [tasksRes, notesRes] = await Promise.all([
-          fetch(DATA_BASE + 'tasks.json'),
-          fetch(DATA_BASE + 'notes.json'),
-        ]);
+        const [nd, td] = await Promise.all([loadRemoteNotes(), loadRemoteTasks()]);
+        const remoteTasks: Task[] = td;
+        const remoteNotes: Note[] = nd;
+        const dl: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
         
-        const [remoteTasks, remoteNotes] = await Promise.all([
-          tasksRes.json(),
-          notesRes.json(),
-        ]);
-
-        const deletedIds: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
-        const isFirstLoad = !localStorage.getItem(STORAGE_KEY_SYNCED);
-        localStorage.setItem(STORAGE_KEY_SYNCED, Date.now().toString());
-
-        if (isFirstLoad) {
-          setTasks(remoteTasks.filter((t: Task) => !deletedIds.includes(t.id)));
-          setNotes(remoteNotes.filter((n: Note) => !deletedIds.includes(n.id)));
-        } else {
-          // Merge: remote is source of truth, keep local comments not yet in remote
-          setTasks(prev => {
-            const localMap = new Map(prev.map(t => [t.id, t]));
-            const merged = remoteTasks
-              .filter((t: Task) => !deletedIds.includes(t.id))
-              .map((t: Task) => {
-                const local = localMap.get(t.id);
-                if (!local) return t;
-                // Merge comments: remote + local comments that are newer
-                const remoteIds = new Set((t.comments || []).map((c: any) => c.id));
-                const mergedComments = [...(t.comments || []), ...(local.comments || []).filter((c: any) => !remoteIds.has(c.id))];
-                return { ...t, comments: mergedComments, status: local.status };
-              });
-            return merged;
+        // Merge tasks: remote additions + local changes preserved
+        setTasks(prev => {
+          const remoteMap = new Map<string, Task>(remoteTasks.filter(t => !dl.includes(t.id)).map(t => [t.id, t]));
+          const localMap = new Map<string, Task>(prev.map(t => [t.id, t]));
+          const merged: Task[] = prev.map(t => {
+            const remote = remoteMap.get(t.id);
+            // Remote updates: status, priority, deadline etc. But keep local comments
+            if (remote) return { ...remote, comments: t.comments };
+            return t;
           });
-          setNotes(prev => {
-            const localMap = new Map(prev.map(n => [n.id, n]));
-            const merged = remoteNotes
-              .filter((n: Note) => !deletedIds.includes(n.id))
-              .map((n: Note) => {
-                const local = localMap.get(n.id);
-                if (!local) return n;
-                // Merge comments: remote + local comments that are newer
-                const remoteIds = new Set((n.comments || []).map((c: any) => c.id));
-                const mergedComments = [...(n.comments || []), ...(local.comments || []).filter((c: any) => !remoteIds.has(c.id))];
-                return { ...n, comments: mergedComments, pinned: local.pinned ?? n.pinned };
-              });
-            return merged;
+          // Add remote tasks not in local
+          for (const [id, t] of remoteMap) { if (!localMap.has(id)) merged.push(t); }
+          return merged;
+        });
+        
+        setNotes(prev => {
+          const remoteMap = new Map<string, Note>(remoteNotes.filter(n => !dl.includes(n.id)).map(n => [n.id, n]));
+          const localMap = new Map<string, Note>(prev.map(n => [n.id, n]));
+          const merged: Note[] = prev.map(n => {
+            const remote = remoteMap.get(n.id);
+            if (remote) {
+              // Merge: remote content + pins, but keep local comments that are newer
+              const remoteCommentIds = new Set((remote.comments || []).map(c => c.id));
+              const mergedComments = [
+                ...(remote.comments || []),
+                ...(n.comments || []).filter(c => !remoteCommentIds.has(c.id))
+              ];
+              return { ...remote, comments: mergedComments, pinned: n.pinned ?? remote.pinned };
+            }
+            return n;
           });
-        }
-      } catch { /* offline */ }
-    }
-    sync();
+          for (const [id, n] of remoteMap) { if (!localMap.has(id)) merged.push(n); }
+          return merged;
+        });
+      } catch {}
+    })();
   }, []);
 
-  useEffect(() => { saveToStorage(STORAGE_KEY_TASKS, tasks); }, [tasks]);
-  useEffect(() => { saveToStorage(STORAGE_KEY_NOTES, notes); }, [notes]);
+  useEffect(() => { sv(STORAGE_KEY_TASKS, tasks); }, [tasks]);
+  useEffect(() => { sv(STORAGE_KEY_NOTES, notes); }, [notes]);
 
-  const addTask = useCallback((task: Task) => setTasks(prev => [task, ...prev]), []);
-  const updateTask = useCallback((id: string, updates: Partial<Task>) =>
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)), []);
-  const deleteTask = useCallback((id: string) =>
-    setTasks(prev => prev.filter(t => t.id !== id)), []);
-
-  const addNote = useCallback((note: Note) => setNotes(prev => [note, ...prev]), []);
-  const updateNote = useCallback((id: string, updates: Partial<Note>) =>
-    setNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n)), []);
-  const deleteNote = useCallback((id: string) => {
-    // Add to deleted blacklist
-    try {
-      const deleted: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
-      if (!deleted.includes(id)) {
-        deleted.push(id);
-        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
-      }
-    } catch {}
-    setNotes(prev => prev.filter(n => n.id !== id));
+  const at = useCallback((t: Task) => setTasks(p => { const n = [t, ...p]; syncToRemote('tasks.json', n); return n; }), []);
+  const ut = useCallback((id: string, u: Partial<Task>) => setTasks(p => { const n = p.map(t => t.id === id ? { ...t, ...u } : t); syncToRemote('tasks.json', n); return n; }), []);
+  const dt = useCallback((id: string) => setTasks(p => { const n = p.filter(t => t.id !== id); syncToRemote('tasks.json', n); return n; }), []);
+  const an = useCallback((n: Note) => setNotes(p => { const nx = [n, ...p]; syncToRemote('notes.json', nx); return nx; }), []);
+  const un = useCallback((id: string, u: Partial<Note>) => setNotes(p => { const nx = p.map(n => n.id === id ? { ...n, ...u } : n); syncToRemote('notes.json', nx); return nx; }), []);
+  const dn = useCallback((id: string) => {
+    try { const dl: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]'); if (!dl.includes(id)) { dl.push(id); localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(dl)); } } catch {}
+    setNotes(p => { const nx = p.filter(n => n.id !== id); syncToRemote('notes.json', nx); return nx; });
   }, []);
-  const addNoteComment = useCallback((noteId: string, comment: NoteComment) =>
-    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, comments: [...(n.comments || []), comment] } : n)), []);
-  const updateNoteComment = useCallback((noteId: string, commentId: string, text: string) =>
-    setNotes(prev => prev.map(n => n.id === noteId ? {
-      ...n, comments: (n.comments || []).map(c => c.id === commentId ? { ...c, text, editedAt: new Date().toISOString() } : c)
-    } : n)), []);
-  const deleteNoteComment = useCallback((noteId: string, commentId: string) =>
-    setNotes(prev => prev.map(n => n.id === noteId ? {
-      ...n, comments: (n.comments || []).filter(c => c.id !== commentId)
-    } : n)), []);
-  const togglePinNote = useCallback((noteId: string) =>
-    setNotes(prev => prev.map(n => n.id === noteId ? { ...n, pinned: !n.pinned } : n)), []);
+  const anc = useCallback((nid: string, c: NoteComment) => setNotes(p => { const nx = p.map(n => n.id === nid ? { ...n, comments: [...(n.comments || []), c] } : n); syncToRemote('notes.json', nx); return nx; }), []);
+  const unc = useCallback((nid: string, cid: string, txt: string) => setNotes(p => { const nx = p.map(n => n.id === nid ? { ...n, comments: (n.comments || []).map(c => c.id === cid ? { ...c, text: txt, editedAt: new Date().toISOString() } : c) } : n); syncToRemote('notes.json', nx); return nx; }), []);
+  const dnc = useCallback((nid: string, cid: string) => setNotes(p => { const nx = p.map(n => n.id === nid ? { ...n, comments: (n.comments || []).filter(c => c.id !== cid) } : n); syncToRemote('notes.json', nx); return nx; }), []);
+  const tpn = useCallback((id: string) => setNotes(p => { const nx = p.map(n => n.id === id ? { ...n, pinned: !n.pinned } : n); syncToRemote('notes.json', nx); return nx; }), []);
 
-  return (
-    <StoreContext.Provider value={{
-      tasks, notes, view, setView,
-      addTask, updateTask, deleteTask,
-      addNote, updateNote, deleteNote, addNoteComment, updateNoteComment, deleteNoteComment, togglePinNote,
-      filterStatus, setFilterStatus,
-      filterPriority, setFilterPriority,
-      filterAssignee, setFilterAssignee,
-      selectedNoteId, setSelectedNoteId,
-      editingNoteId, setEditingNoteId,
-      showTaskForm, setShowTaskForm,
-      editingTask, setEditingTask,
-    }}>
-      {children}
-    </StoreContext.Provider>
-  );
+  return React.createElement(StoreContext.Provider, { value: { tasks, notes, view, setView, addTask: at, updateTask: ut, deleteTask: dt, addNote: an, updateNote: un, deleteNote: dn, addNoteComment: anc, updateNoteComment: unc, deleteNoteComment: dnc, togglePinNote: tpn, filterStatus, setFilterStatus, filterPriority, setFilterPriority, filterAssignee, setFilterAssignee, selectedNoteId, setSelectedNoteId, editingNoteId, setEditingNoteId, showTaskForm, setShowTaskForm, editingTask, setEditingTask }}, children);
 }
 
 export function useStore() {
   const ctx = useContext(StoreContext);
-  if (!ctx) throw new Error('useStore must be inside StoreProvider');
+  if (!ctx) throw new Error('useStore');
   return ctx;
 }
