@@ -52,7 +52,7 @@ const TaskForm: React.FC = () => {
   };
 
   const addComment = () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || !editingTask) return;
     const author = commentAs;
     const authorName = ASSIGNEE_LABELS[commentAs];
     const comment: TaskComment = {
@@ -62,8 +62,10 @@ const TaskForm: React.FC = () => {
       text: commentText.trim(),
       createdAt: new Date().toISOString(),
     };
-    setTaskComments(prev => [...prev, comment]);
+    const newComments = [...taskComments, comment];
+    setTaskComments(newComments);
     setCommentText('');
+    updateTask(editingTask.id, { comments: newComments });
   };
 
   const startEditComment = (c: TaskComment) => {
@@ -71,15 +73,20 @@ const TaskForm: React.FC = () => {
     setEditingCommentText(c.text);
   };
   const saveEditComment = () => {
-    if (!editingCommentId || !editingCommentText.trim()) return;
-    setTaskComments(prev => prev.map(c => c.id === editingCommentId
+    if (!editingCommentId || !editingCommentText.trim() || !editingTask) return;
+    const newComments = taskComments.map(c => c.id === editingCommentId
       ? { ...c, text: editingCommentText.trim(), editedAt: new Date().toISOString() }
-      : c));
+      : c);
+    setTaskComments(newComments);
     setEditingCommentId(null);
     setEditingCommentText('');
+    updateTask(editingTask.id, { comments: newComments });
   };
   const deleteCommentLocal = (cid: string) => {
-    setTaskComments(prev => prev.filter(c => c.id !== cid));
+    if (!editingTask) return;
+    const newComments = taskComments.filter(c => c.id !== cid);
+    setTaskComments(newComments);
+    updateTask(editingTask.id, { comments: newComments });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
