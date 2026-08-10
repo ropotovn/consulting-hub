@@ -1,40 +1,5 @@
 [
   {
-    "id": "tmsnjdi1qv5j4",
-    "title": "Регистрация на ФЛ и прочей херне",
-    "description": "",
-    "status": "doing",
-    "priority": "now",
-    "tags": [],
-    "assignee": "sanya",
-    "deadline": "2026-08-12",
-    "createdAt": "2026-08-10T17:59:40.190Z",
-    "createdBy": "user",
-    "comments": [
-      {
-        "id": "cmsnjdw3f",
-        "author": "nikita",
-        "authorName": "Никита",
-        "text": "че почту домен использовать как",
-        "createdAt": "2026-08-10T17:59:58.396Z"
-      },
-      {
-        "id": "cmsnjefnw",
-        "author": "nikita",
-        "authorName": "Никита",
-        "text": "shtab7",
-        "createdAt": "2026-08-10T18:00:23.756Z"
-      },
-      {
-        "id": "cmsnjeujx",
-        "author": "sanya",
-        "authorName": "Саня",
-        "text": "заблы выбрать чей твит",
-        "createdAt": "2026-08-10T18:00:43.053Z"
-      }
-    ]
-  },
-  {
     "id": "t1",
     "title": "Определить MVP-фичи для стартапа",
     "description": "Нужно сесть и расписать минимальный набор фич, с которым можно выходить к первым пользователям. Отсечь всё лишнее.",
@@ -212,6 +177,48 @@
         "authorName": "Саня",
         "text": "куку",
         "createdAt": "2026-08-08T02:08:11.180Z"
+      }
+    ]
+  },
+  {
+    "id": "tmsnjdi1qv5j4",
+    "title": "Регистрация на ФЛ и прочей херне",
+    "description": "",
+    "status": "doing",
+    "priority": "now",
+    "tags": [],
+    "assignee": "sanya",
+    "deadline": "2026-08-12",
+    "createdAt": "2026-08-10T17:59:40.190Z",
+    "createdBy": "user",
+    "comments": [
+      {
+        "id": "cmsnjdw3f",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "че почту домен использовать как",
+        "createdAt": "2026-08-10T17:59:58.396Z"
+      },
+      {
+        "id": "cmsnjefnw",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "shtab7",
+        "createdAt": "2026-08-10T18:00:23.756Z"
+      },
+      {
+        "id": "cmsnjeujx",
+        "author": "sanya",
+        "authorName": "Саня",
+        "text": "заблы выбрать чей твит",
+        "createdAt": "2026-08-10T18:00:43.053Z"
+      },
+      {
+        "id": "cmsnjhm3a",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "можно, но лучше без цифры что то придумать",
+        "createdAt": "2026-08-10T18:02:52.054Z"
       }
     ]
   }
