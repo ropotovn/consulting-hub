@@ -27,7 +27,10 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">shtab</div>
+      <div className="sidebar-logo">
+        <span>shtab</span>
+        <NotificationBell />
+      </div>
 
       <nav className="sidebar-nav">
         <button className={`nav-item ${view === 'tasks' ? 'active' : ''}`} onClick={() => setView('tasks')}>Tasks</button>
@@ -35,7 +38,6 @@ const Sidebar: React.FC = () => {
           Knowledge <span className="nav-count">{notes.length}</span>
         </button>
         <button className={`nav-item ${view === 'board' ? 'active' : ''}`} onClick={() => setView('board')}>Board</button>
-        <NotificationBell />
       </nav>
 
       <div className="theme-picker">
