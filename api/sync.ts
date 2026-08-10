@@ -7,7 +7,6 @@ export default async function handler(req) {
   };
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   
-  // @ts-ignore - process.env available in Vercel Edge runtime
   const t = (process.env.GH_TOKEN || '').trim();
   if (!t) return new Response('No GH_TOKEN', { status: 500, headers: CORS });
   const token_auth = 'token ' + t;
@@ -25,7 +24,11 @@ export default async function handler(req) {
       const res = await fetch(getUrl, { headers: gh, cache: 'no-store' });
       if (!res.ok) return new Response(JSON.stringify({ ok: false, error: 'GitHub read: ' + res.status }), { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } });
       const d = await res.json();
-      const content = JSON.parse(atob(d.content.replace(/\s/g, '')));
+      // Proper UTF-8 decode: atob → bytes → TextDecoder → JSON
+      const raw = atob(d.content.replace(/\s/g, ''));
+      const bytes = Uint8Array.from(raw, c => c.charCodeAt(0));
+      const text = new TextDecoder().decode(bytes);
+      const content = JSON.parse(text);
       return new Response(JSON.stringify({ ok: true, data: content, sha: d.sha }), {
         status: 200,
         headers: { ...CORS, 'Content-Type': 'application/json' },
