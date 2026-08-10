@@ -35,10 +35,11 @@ function ld<T>(k: string, fb: T): T {
 }
 function sv(k: string, d: any) { try { localStorage.setItem(k, JSON.stringify(d)); } catch {} }
 
-// Detect and fix mojibake (UTF-8 bytes interpreted as Latin-1)
+// Detect and fix mojibake (UTF-8 bytes interpreted as Latin-1, and KOI8-R stripped high bit)
 function fixMojibake(obj: any): any {
   if (typeof obj === 'string') {
     let s = obj;
+    // Pass 1: UTF-8 as Latin-1
     for (let i = 0; i < 5; i++) {
       try {
         const fixed = new TextDecoder().decode(
@@ -47,6 +48,20 @@ function fixMojibake(obj: any): any {
         if (fixed === s) break;
         s = fixed;
       } catch { break; }
+    }
+    // Pass 2: KOI8-R with stripped high bit (A-Z, @, [, etc. → Cyrillic)
+    if (/[@A-Z\[\]\\^_]{2,}/.test(s)) {
+      try {
+        const bytes = Uint8Array.from(s, c => {
+          const o = c.charCodeAt(0);
+          return (o >= 0x40 && o <= 0x5F) ? (o | 0x80) : o;
+        });
+        const koi = new TextDecoder('koi8-r').decode(bytes);
+        // Count Cyrillic chars — if significantly more, use KOI-8R fix
+        const cyrBefore = (s.match(/[\u0400-\u04FF]/g) || []).length;
+        const cyrAfter = (koi.match(/[\u0400-\u04FF]/g) || []).length;
+        if (cyrAfter > cyrBefore + 2) s = koi;
+      } catch {}
     }
     return s;
   }
