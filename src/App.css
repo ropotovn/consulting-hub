@@ -697,6 +697,20 @@ mark.kb-highlight-active {
 
 .kb-note-content { padding: 4px 0; }
 
+/* External links (sources) + internal wiki-links [[id|Title]] */
+.markdown-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.kb-wikilink {
+  background: none; border: none; padding: 0;
+  color: var(--accent); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+  font: inherit;
+}
+.kb-wikilink:hover { opacity: 0.75; }
+
 /* Markdown tables */
 .markdown-body table {
   border-collapse: collapse; width: 100%; margin: 12px 0;

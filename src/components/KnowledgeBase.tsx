@@ -5,6 +5,14 @@ import { NOTE_TYPE_LABELS } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+// Turn Obsidian-style wikilinks [[id|Title]] (and [[id]]) into internal anchor
+// links (#note:id) that the custom `a` renderer below routes to the note.
+function preprocessWikiLinks(content: string): string {
+  return content
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, (_m, id, title) => `[${title}](#note:${id})`)
+    .replace(/\[\[([^\]]+)\]\]/g, (_m, id) => `[${id}](#note:${id})`);
+}
+
 const KbCommentInput: React.FC<{
   noteId: string; selectedText: string; startOffset: number; endOffset: number;
   onDone: () => void;
@@ -228,7 +236,15 @@ const KnowledgeBase: React.FC = () => {
                 {selectedNote.tags.length > 0 && <div className="kb-tags">{selectedNote.tags.map(tag => <span key={tag} className="kb-tag">{tag}</span>)}</div>}
               </div>
               <div ref={contentRef} className="kb-note-content markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedNote.content}</ReactMarkdown>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    a: ({ href, children }) =>
+                      href && href.startsWith('#note:')
+                        ? <button className="kb-wikilink" onClick={() => setSelectedNoteId(href.slice(6))}>{children}</button>
+                        : <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+                  }}
+                >{preprocessWikiLinks(selectedNote.content)}</ReactMarkdown>
               </div>
             </div>
 
