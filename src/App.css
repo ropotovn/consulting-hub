@@ -60,7 +60,35 @@ body {
   display: flex; flex-direction: column;
   padding: 12px;
   user-select: none;
+  transition: width 0.15s ease, min-width 0.15s ease;
 }
+
+.sidebar.collapsed {
+  width: 56px; min-width: 56px;
+  padding: 12px 8px;
+}
+
+.sidebar-logo-actions { display: flex; align-items: center; gap: 2px; }
+
+.collapse-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border: none; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.collapse-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+.nav-icon { display: flex; flex-shrink: 0; }
+
+.logo-mark {
+  font-size: 15px; font-weight: 600; font-family: var(--font-mono);
+  color: var(--text); letter-spacing: -0.02em;
+}
+
+.sidebar.collapsed .collapsed-logo { justify-content: center; margin-bottom: 10px; }
+.sidebar.collapsed .collapsed-bell { display: flex; justify-content: center; margin-bottom: 10px; }
+.sidebar.collapsed .nav-item { justify-content: center; padding: 8px 0; }
+.sidebar.collapsed .collapsed-expand { margin-top: auto; align-self: center; }
 
 .sidebar-logo {
   display: flex; align-items: center; justify-content: space-between;
@@ -526,12 +554,25 @@ select.input { cursor: pointer; appearance: none; }
 .form-footer .btn-danger { margin-right: auto; }
 
 /* === Knowledge Base — Obsidian-style === */
-.kb-layout { display: flex; gap: 20px; height: calc(100vh - 80px); }
+.kb-layout { display: flex; gap: 0; height: calc(100vh - 80px); }
 
 .kb-files {
-  width: 180px; min-width: 180px;
-  border-right: 1px solid var(--border);
-  padding-right: 14px; overflow-y: auto;
+  width: var(--kb-files-width, 180px);
+  min-width: var(--kb-files-width, 180px);
+  padding-right: 10px; overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.kb-resizer {
+  width: 8px; flex-shrink: 0; cursor: col-resize;
+  display: flex; justify-content: center; position: relative;
+}
+.kb-resizer::after {
+  content: ''; width: 1px; background: var(--border);
+  transition: all 0.15s;
+}
+.kb-resizer:hover::after, .kb-resizer.dragging::after {
+  width: 2px; background: var(--accent);
 }
 
 .kb-files-title {
@@ -588,7 +629,7 @@ select.input { cursor: pointer; appearance: none; }
 .kb-file-item:hover .kb-pin-btn { opacity: 1; }
 .kb-pin-btn:hover { background: var(--bg-hover); color: var(--text); }
 
-.kb-note-panel { flex: 1; overflow-y: auto; }
+.kb-note-panel { flex: 1; overflow-y: auto; padding-left: 12px; }
 
 .kb-note-layout {
   display: flex; gap: 32px;
@@ -1234,6 +1275,8 @@ mark.kb-highlight-active {
     z-index: 5;
     padding-top: 4px;
   }
+
+  .kb-resizer { display: none; }
 
   .kb-files-title {
     flex-shrink: 0;

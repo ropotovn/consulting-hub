@@ -61,6 +61,36 @@ const KnowledgeBase: React.FC = () => {
   const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const formActiveRef = useRef(false);
+  const [filesWidth, setFilesWidth] = useState(() => {
+    const v = parseInt(localStorage.getItem('shtab_kb_files_width') || '180', 10);
+    return Math.min(480, Math.max(140, isNaN(v) ? 180 : v));
+  });
+  const widthRef = useRef(filesWidth);
+  const [resizing, setResizing] = useState(false);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = widthRef.current;
+    setResizing(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const onMove = (ev: MouseEvent) => {
+      const w = Math.min(480, Math.max(140, startWidth + (ev.clientX - startX)));
+      widthRef.current = w;
+      setFilesWidth(w);
+    };
+    const onUp = () => {
+      setResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      localStorage.setItem('shtab_kb_files_width', String(widthRef.current));
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
 
   const backlinks = selectedNoteId ? notes.filter(n => n.links.includes(selectedNoteId)) : [];
   const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) : null;
@@ -187,7 +217,7 @@ const KnowledgeBase: React.FC = () => {
   };
 
   return (
-    <div className="kb-layout">
+    <div className="kb-layout" style={{ '--kb-files-width': filesWidth + 'px' } as React.CSSProperties}>
       <div className="kb-files">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span className="kb-files-title">Notes</span>
@@ -217,6 +247,8 @@ const KnowledgeBase: React.FC = () => {
           </div>
         );})}
       </div>
+
+      <div className={`kb-resizer ${resizing ? 'dragging' : ''}`} onMouseDown={startResize} title="Drag to resize" />
 
       <div className="kb-note-panel">
         {selectedNote ? (
