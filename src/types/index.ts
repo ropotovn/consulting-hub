@@ -27,6 +27,16 @@ export interface Task {
   comments: TaskComment[];
 }
 
+export type NoteType = 'guide' | 'case' | 'boost' | 'insight' | 'checklist';
+
+export const NOTE_TYPE_LABELS: Record<NoteType, string> = {
+  guide: 'Guide',
+  case: 'Case',
+  boost: 'Boost',
+  insight: 'Insight',
+  checklist: 'Checklist',
+};
+
 export interface Note {
   id: string;
   title: string;
@@ -37,6 +47,7 @@ export interface Note {
   updatedAt: string;
   comments: NoteComment[];
   pinned?: boolean;
+  type?: NoteType;
 }
 
 export interface NoteComment {

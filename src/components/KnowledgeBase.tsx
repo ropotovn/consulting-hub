@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
 import { useTelegram } from '../hooks/useTelegram';
+import { NOTE_TYPE_LABELS } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -179,6 +180,7 @@ const KnowledgeBase: React.FC = () => {
           <div key={note.id} className={`kb-file-item ${selectedNoteId === note.id ? 'active' : ''}`} onClick={() => setSelectedNoteId(note.id)}>
             <span className="kb-file-icon">{note.pinned ? '◆' : '·'}</span>
             <span className="kb-file-title">{note.title}</span>
+            {note.type && <span className={`kb-type-badge kb-type-${note.type}`}>{NOTE_TYPE_LABELS[note.type]}</span>}
             {isNew && <span className="kb-badge-new">new</span>}
             {commentCount > 0 && <span className="kb-badge-comment" title={`${commentCount} comment${commentCount > 1 ? 's' : ''}${lastAuthor ? ' by ' + lastAuthor : ''}`}>{commentCount}</span>}
             <button className="kb-pin-btn" onClick={(e) => { e.stopPropagation(); togglePinNote(note.id); }} title={note.pinned ? 'Unpin' : 'Pin'}>
@@ -205,6 +207,7 @@ const KnowledgeBase: React.FC = () => {
               </div>
               <h2 style={{ fontSize: 18, fontWeight: 600, fontFamily: 'var(--font-mono)', marginBottom: 4 }}>{selectedNote.title}</h2>
               <div className="kb-note-meta">
+                {selectedNote.type && <span className={`kb-type-badge kb-type-${selectedNote.type}`}>{NOTE_TYPE_LABELS[selectedNote.type]}</span>}
                 <span>Updated {new Date(selectedNote.updatedAt).toLocaleDateString('ru-RU')}</span>
                 {selectedNote.tags.length > 0 && <div className="kb-tags">{selectedNote.tags.map(tag => <span key={tag} className="kb-tag">{tag}</span>)}</div>}
               </div>
