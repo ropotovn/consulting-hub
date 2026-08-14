@@ -180,7 +180,6 @@ const KnowledgeBase: React.FC = () => {
           <div key={note.id} className={`kb-file-item ${selectedNoteId === note.id ? 'active' : ''}`} onClick={() => setSelectedNoteId(note.id)}>
             <span className="kb-file-icon">{note.pinned ? '◆' : '·'}</span>
             <span className="kb-file-title">{note.title}</span>
-            {note.type && <span className={`kb-type-badge kb-type-${note.type}`}>{NOTE_TYPE_LABELS[note.type]}</span>}
             {isNew && <span className="kb-badge-new">new</span>}
             {commentCount > 0 && <span className="kb-badge-comment" title={`${commentCount} comment${commentCount > 1 ? 's' : ''}${lastAuthor ? ' by ' + lastAuthor : ''}`}>{commentCount}</span>}
             <button className="kb-pin-btn" onClick={(e) => { e.stopPropagation(); togglePinNote(note.id); }} title={note.pinned ? 'Unpin' : 'Pin'}>
