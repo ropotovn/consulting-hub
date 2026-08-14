@@ -3,7 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
+    # Data files are read live from `main` via the Vercel API — they do NOT
+    # need a frontend rebuild. Only deploy when non-data files change.
+    paths-ignore:
       - 'public/data/**'
   workflow_dispatch:
 
