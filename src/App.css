@@ -633,6 +633,7 @@ select.input { cursor: pointer; appearance: none; }
   background: var(--bg-secondary); border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
   transition: border-color 0.15s;
+  cursor: pointer;
 }
 .kb-comment-hover {
   border-color: var(--text);
@@ -669,6 +670,11 @@ mark.kb-highlight {
 mark.kb-highlight:hover {
   background: var(--accent);
   color: var(--bg);
+}
+mark.kb-highlight-active {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .kb-note-header {

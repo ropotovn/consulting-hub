@@ -155,6 +155,23 @@ const KnowledgeBase: React.FC = () => {
     });
   }, [selectedNote]);
 
+  // When a comment is hovered (either via the sidebar item or the anchored text),
+  // visually emphasize its anchored text in the article body.
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const marks = contentRef.current.querySelectorAll('mark.kb-highlight');
+    marks.forEach(m => {
+      m.classList.toggle('kb-highlight-active', m.getAttribute('data-comment') === hoveredCommentId);
+    });
+  }, [hoveredCommentId, selectedNote]);
+
+  const scrollToComment = (commentId: string) => {
+    if (!contentRef.current) return;
+    const mark = contentRef.current.querySelector(`mark.kb-highlight[data-comment="${commentId}"]`);
+    if (mark) mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHoveredCommentId(commentId);
+  };
+
   const saveEditComment = (noteId: string, commentId: string) => {
     if (!editCommentText.trim()) return;
     updateNoteComment(noteId, commentId, editCommentText.trim());
@@ -238,7 +255,8 @@ const KnowledgeBase: React.FC = () => {
                 {(selectedNote.comments || []).map(c => (
                   <div key={c.id} className={`kb-comment-item ${hoveredCommentId === c.id ? 'kb-comment-hover' : ''}`}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
-                    onMouseLeave={() => setHoveredCommentId(null)}>
+                    onMouseLeave={() => setHoveredCommentId(null)}
+                    onClick={() => scrollToComment(c.id)}>
                     <div className="kb-comment-anchor">«{c.selectedText.slice(0, 40)}{c.selectedText.length > 40 ? '…' : ''}»</div>
                     {editingCommentId === c.id ? (
                       <div>
