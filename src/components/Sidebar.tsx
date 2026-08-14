@@ -79,7 +79,7 @@ const Sidebar: React.FC = () => {
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       {collapsed ? (
         <>
-          <div className="sidebar-logo collapsed-logo"><span className="logo-mark">s</span></div>
+          <button className="collapse-btn collapsed-toggle" onClick={toggleCollapse} title="Развернуть"><ChevronRight /></button>
           <div className="collapsed-bell"><NotificationBell /></div>
         </>
       ) : (
@@ -145,7 +145,7 @@ const Sidebar: React.FC = () => {
       )}
 
       {collapsed && (
-        <button className="collapse-btn collapsed-expand" onClick={toggleCollapse} title="Развернуть"><ChevronRight /></button>
+        <div className="collapsed-logo"><span className="logo-mark">s</span></div>
       )}
 
       {/* Changelog modal */}

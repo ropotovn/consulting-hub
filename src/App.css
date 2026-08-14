@@ -85,10 +85,14 @@ body {
   color: var(--text); letter-spacing: -0.02em;
 }
 
-.sidebar.collapsed .collapsed-logo { justify-content: center; margin-bottom: 10px; }
+.sidebar.collapsed .collapsed-toggle { align-self: center; margin-bottom: 10px; }
 .sidebar.collapsed .collapsed-bell { display: flex; justify-content: center; margin-bottom: 10px; }
 .sidebar.collapsed .nav-item { justify-content: center; padding: 8px 0; }
-.sidebar.collapsed .collapsed-expand { margin-top: auto; align-self: center; }
+.sidebar.collapsed .collapsed-logo {
+  display: flex; justify-content: center;
+  margin-top: auto; padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
 
 .sidebar-logo {
   display: flex; align-items: center; justify-content: space-between;
