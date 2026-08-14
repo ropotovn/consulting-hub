@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { Task, Note, NoteComment, View, TaskStatus, Priority, Notification } from '../types';
 import { sampleTasks, sampleNotes } from '../data/sampleData';
-import { loadRemoteNotes, loadRemoteTasks, syncToRemote } from '../githubSync';
+import { loadRemoteNotes, loadRemoteTasks, loadRemoteDeleted, syncToRemote } from '../githubSync';
 
 const STORAGE_KEY_TASKS = 'consulting_hub_tasks';
 const STORAGE_KEY_NOTES = 'consulting_hub_notes';
@@ -113,10 +113,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Sync function — pulls remote data and merges with local
   const syncFromRemote = useCallback(async () => {
     try {
-      const [nd, td] = await Promise.all([loadRemoteNotes(), loadRemoteTasks()]);
+      const [nd, td, deld] = await Promise.all([loadRemoteNotes(), loadRemoteTasks(), loadRemoteDeleted()]);
       const remoteTasks: Task[] = fixMojibake(td);
       const remoteNotes: Note[] = fixMojibake(nd);
-      const dl: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      const serverDeleted: string[] = Array.isArray(deld) ? deld : [];
+      const localDeleted: string[] = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      const dl: string[] = [...new Set([...localDeleted, ...serverDeleted])];
+      localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(dl));
       
       setTasks(prev => {
         const remoteMap = new Map<string, Task>(remoteTasks.filter(t => !dl.includes(t.id)).map(t => [t.id, t]));
