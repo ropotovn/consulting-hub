@@ -77,7 +77,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  // roster of the current workspace (assignee dropdown + @mentions)
+  // roster of the current workspace (assignee dropdown + @mentions + profile cards)
   useEffect(() => {
     if (!configured || !user || !currentWorkspaceId) {
       setMembers([]);
@@ -85,11 +85,22 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      const { data: memRows } = await supabase
         .from('workspace_members')
-        .select('workspace_id, user_id, role, joined_at, profile:profiles(id, full_name, username, avatar_url)')
+        .select('workspace_id, user_id, role, joined_at')
         .eq('workspace_id', currentWorkspaceId);
-      if (!cancelled && data) setMembers(data as unknown as WorkspaceMember[]);
+      if (cancelled || !memRows) return;
+      const ids = (memRows as Array<{ user_id: string }>).map(m => m.user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, avatar_url, username, bio, created_at, updated_at')
+        .in('id', ids);
+      const profileMap = new Map<string, object>((profiles || []).map(p => [p.id as string, p]));
+      const merged = (memRows as Array<Record<string, unknown>>).map(m => ({
+        ...m,
+        profile: profileMap.get(m.user_id as string) || null,
+      }));
+      if (!cancelled) setMembers(merged as unknown as WorkspaceMember[]);
     })();
     return () => { cancelled = true; };
   }, [configured, user, currentWorkspaceId]);

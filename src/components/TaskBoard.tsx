@@ -262,7 +262,7 @@ const TaskBoard: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <div className="card-assignee">{task.assignee ? <UserChip userId={task.assignee.id} label={task.assignee.name.charAt(0).toUpperCase()} /> : ''}</div>
+                  <div className="card-assignee">{task.assignee ? <UserChip userId={task.assignee.id} /> : ''}</div>
                 </div>
               ))}
               {grouped[status].length === 0 && <div className="column-empty">—</div>}
