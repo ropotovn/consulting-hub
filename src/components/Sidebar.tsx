@@ -3,6 +3,7 @@ import { useStore } from '../hooks/useStore';
 import { useTheme } from '../hooks/useTheme';
 import { changelog } from '../changelog';
 import NotificationBell from './NotificationBell';
+import WorkspaceSwitcher from './WorkspaceSwitcher';
 import type { View } from '../types';
 
 const TasksIcon = () => (
@@ -84,11 +85,17 @@ const Sidebar: React.FC = () => {
         </>
       ) : (
         <div className="sidebar-logo">
-          <span>shtab</span>
+          <span>stabs</span>
           <div className="sidebar-logo-actions">
             <NotificationBell />
             <button className="collapse-btn" onClick={toggleCollapse} title="Свернуть"><ChevronLeft /></button>
           </div>
+        </div>
+      )}
+
+      {!collapsed && (
+        <div className="sidebar-ws">
+          <WorkspaceSwitcher />
         </div>
       )}
 

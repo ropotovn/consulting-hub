@@ -1,4 +1,4 @@
-/* === shtab — Design System === */
+/* === stabs — Design System === */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -826,6 +826,33 @@ mark.kb-highlight-active {
 }
 .markdown-body a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
 .markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.markdown-body img.kb-img { max-width: 100%; height: auto; border-radius: 8px; margin: 12px 0; display: block; }
+.markdown-body video.kb-video { max-width: 100%; border-radius: 8px; margin: 12px 0; display: block; background: #000; }
+.markdown-body .kb-embed { position: relative; width: 100%; padding-bottom: 56.25%; margin: 12px 0; }
+.markdown-body .kb-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
+/* @mentions */
+.mention { color: var(--text); background: var(--bg-secondary); padding: 0 4px; border-radius: 4px; font-weight: 600; font-family: var(--font-mono); }
+.mention-input { position: relative; flex: 1; }
+.mention-suggest { position: absolute; bottom: 100%; left: 0; right: 0; margin-bottom: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.14); z-index: 60; max-height: 220px; overflow-y: auto; }
+.mention-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; border: none; background: none; cursor: pointer; font-size: 12px; text-align: left; font-family: var(--font-mono); }
+.mention-item.active { background: var(--bg-secondary); }
+.mention-avatar { width: 20px; height: 20px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+.mention-name { font-weight: 500; }
+.mention-handle { color: var(--text-muted); font-size: 11px; }
+/* user chip + profile card */
+.user-chip { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; padding: 0; cursor: pointer; font: inherit; color: inherit; }
+.user-chip-avatar { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.user-chip-avatar-fb { display: inline-flex; align-items: center; justify-content: center; background: var(--bg-secondary); font-size: 9px; font-weight: 600; }
+.user-chip-label { font-weight: 500; }
+.profile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.profile-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px; width: 280px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.profile-card-avatar { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+.profile-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-card-name { font-size: 16px; font-weight: 600; }
+.profile-card-handle { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+.profile-card-role { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+.profile-card-bio { font-size: 12px; margin-top: 4px; white-space: pre-wrap; }
+.profile-card-meta { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
 
 /* === Note Editor === */
 .editor-header {

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
-import { useTelegram } from '../hooks/useTelegram';
-import { TAG_LABELS, PRIORITY_LABELS, STATUS_LABELS, ASSIGNEE_LABELS } from '../types';
-import type { TaskStatus, Priority, TaskTag, Assignee, TaskComment } from '../types';
+import { useAuth } from '../hooks/useAuth';
+import { useWorkspaces } from '../hooks/useWorkspaces';
+import { TAG_LABELS, PRIORITY_LABELS, STATUS_LABELS } from '../types';
+import type { TaskStatus, Priority, TaskTag, UserRef, TaskComment } from '../types';
+import MentionInput from './MentionInput';
+import { renderMentioned } from '../mentions';
+import UserChip from './UserChip';
 
 function newId(): string {
   return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -10,25 +14,20 @@ function newId(): string {
 
 const TaskForm: React.FC = () => {
   const { addTask, updateTask, deleteTask, editingTask, setShowTaskForm, setEditingTask } = useStore();
-  const { currentUser } = useTelegram();
+  const { currentUserRef } = useAuth();
+  const { memberRefs } = useWorkspaces();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>('todo');
   const [priority, setPriority] = useState<Priority>('soon');
   const [tags, setTags] = useState<TaskTag[]>([]);
-  const [assignee, setAssignee] = useState<Assignee>('nikita');
+  const [assigneeId, setAssigneeId] = useState<string>('');
   const [deadline, setDeadline] = useState('');
   const [commentText, setCommentText] = useState('');
   const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
-  const [commentAs, setCommentAs] = useState<Assignee>(currentUser || 'nikita');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
-
-  // Sync commentAs when Telegram user detected
-  useEffect(() => {
-    if (currentUser) setCommentAs(currentUser);
-  }, [currentUser]);
 
   useEffect(() => {
     if (editingTask) {
@@ -37,12 +36,12 @@ const TaskForm: React.FC = () => {
       setStatus(editingTask.status);
       setPriority(editingTask.priority);
       setTags(editingTask.tags);
-      setAssignee(editingTask.assignee);
+      setAssigneeId(editingTask.assignee?.id ?? '');
       setDeadline(editingTask.deadline?.split('T')[0] || '');
       setTaskComments(editingTask.comments || []);
     } else {
       setTitle(''); setDescription(''); setStatus('todo'); setPriority('soon');
-      setTags([]); setAssignee('nikita'); setDeadline('');
+      setTags([]); setAssigneeId(''); setDeadline('');
       setTaskComments([]);
     }
   }, [editingTask]);
@@ -53,12 +52,10 @@ const TaskForm: React.FC = () => {
 
   const addComment = () => {
     if (!commentText.trim() || !editingTask) return;
-    const author = commentAs;
-    const authorName = ASSIGNEE_LABELS[commentAs];
+    const author: UserRef = currentUserRef ?? { id: 'unknown', name: 'Unknown', username: '' };
     const comment: TaskComment = {
       id: 'c' + Date.now().toString(36),
       author,
-      authorName,
       text: commentText.trim(),
       createdAt: new Date().toISOString(),
     };
@@ -93,6 +90,8 @@ const TaskForm: React.FC = () => {
     e.preventDefault();
     if (!title.trim()) return;
 
+    const assignee = memberRefs.find(m => m.id === assigneeId) ?? null;
+
     if (editingTask) {
       updateTask(editingTask.id, {
         title: title.trim(), description: description.trim(),
@@ -104,7 +103,8 @@ const TaskForm: React.FC = () => {
         id: newId(), title: title.trim(), description: description.trim(),
         status, priority, tags, assignee,
         deadline: deadline || null,
-        createdAt: new Date().toISOString(), createdBy: 'user',
+        createdAt: new Date().toISOString(),
+        createdBy: currentUserRef ?? 'agent',
         comments: [],
       });
     }
@@ -143,8 +143,9 @@ const TaskForm: React.FC = () => {
           <div className="form-row">
             <div className="form-field">
               <label>Assignee</label>
-              <select className="input" value={assignee} onChange={e => setAssignee(e.target.value as Assignee)}>
-                {Object.entries(ASSIGNEE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              <select className="input" value={assigneeId} onChange={e => setAssigneeId(e.target.value)}>
+                <option value="">Unassigned</option>
+                {memberRefs.map(m => <option key={m.id} value={m.id}>{m.name}{m.username ? ` (@${m.username})` : ''}</option>)}
               </select>
             </div>
             <div className="form-field">
@@ -166,32 +167,11 @@ const TaskForm: React.FC = () => {
 
           {editingTask && (
             <div className="comments-section">
-              <div className="comments-title">
-                Comments
-                <span style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>as</span>
-                  <button
-                    type="button"
-                    className={`filter-chip ${commentAs === 'nikita' ? 'active' : ''}`}
-                    onClick={() => setCommentAs('nikita')}
-                    style={{ fontSize: 9, padding: '1px 6px' }}
-                  >
-                    N
-                  </button>
-                  <button
-                    type="button"
-                    className={`filter-chip ${commentAs === 'sanya' ? 'active' : ''}`}
-                    onClick={() => setCommentAs('sanya')}
-                    style={{ fontSize: 9, padding: '1px 6px' }}
-                  >
-                    S
-                  </button>
-                </span>
-              </div>
+              <div className="comments-title">Comments</div>
               {taskComments.map(c => (
                 <div key={c.id} className="comment-item">
                   <div className="comment-author">
-                    {c.authorName} · {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    <UserChip userId={c.author.id} label={c.author.name} /> · {new Date(c.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     {c.editedAt && <span className="comment-edited"> (edited)</span>}
                   </div>
                   {editingCommentId === c.id ? (
@@ -204,7 +184,7 @@ const TaskForm: React.FC = () => {
                     </div>
                   ) : (
                     <div className="comment-body">
-                      <div className="comment-text">{c.text}</div>
+                      <div className="comment-text">{renderMentioned(c.text)}</div>
                       <div className="comment-actions">
                         <button type="button" className="btn-ghost btn-xs" onClick={() => startEditComment(c)} title="Edit">✎</button>
                         <button type="button" className="btn-ghost btn-xs" onClick={() => deleteCommentLocal(c.id)} title="Delete">✕</button>
@@ -219,12 +199,12 @@ const TaskForm: React.FC = () => {
                 </div>
               )}
               <div className="comment-input-row">
-                <input
-                  className="input"
-                  placeholder="Add comment..."
+                <MentionInput
                   value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addComment(); } }}
+                  onChange={setCommentText}
+                  members={memberRefs}
+                  placeholder="Add comment... (@ to mention)"
+                  onEnter={addComment}
                 />
                 <button type="button" className="btn-primary" onClick={addComment}>Send</button>
               </div>

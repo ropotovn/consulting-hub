@@ -1,9 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
-import { useTelegram } from '../hooks/useTelegram';
+import { useAuth } from '../hooks/useAuth';
+import { useWorkspaces } from '../hooks/useWorkspaces';
 import { NOTE_TYPE_LABELS } from '../types';
+import MentionInput from './MentionInput';
+import { renderMentioned } from '../mentions';
+import UserChip from './UserChip';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { VIDEO_EXT, youtubeId } from '../media';
 
 // Turn Obsidian-style wikilinks [[id|Title]] (and [[id]]) into internal anchor
 // links (#note:id) that the custom `a` renderer below routes to the note.
@@ -18,15 +23,15 @@ const KbCommentInput: React.FC<{
   onDone: () => void;
 }> = ({ noteId, selectedText, startOffset, endOffset, onDone }) => {
   const { addNoteComment } = useStore();
-  const { currentUser } = useTelegram();
+  const { currentUserRef } = useAuth();
+  const { memberRefs } = useWorkspaces();
   const [text, setText] = useState('');
-  const [author, setAuthor] = useState(currentUser === 'nikita' ? 'Никита' : currentUser === 'sanya' ? 'Саня' : 'Никита');
 
   const submit = () => {
     if (!text.trim()) return;
     addNoteComment(noteId, {
       id: 'nc' + Date.now().toString(36),
-      author,
+      author: currentUserRef ?? { id: 'unknown', name: 'Unknown', username: '' },
       text: text.trim(),
       selectedText,
       startOffset,
@@ -39,12 +44,7 @@ const KbCommentInput: React.FC<{
   return (
     <div className="kb-comment-form">
       <div className="kb-comment-anchor">«{selectedText.slice(0, 50)}{selectedText.length > 50 ? '…' : ''}»</div>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 4, alignItems: 'center' }}>
-        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>as</span>
-        <button className={`filter-chip ${author === 'Никита' ? 'active' : ''}`} style={{ fontSize: 9, padding: '1px 6px' }} onClick={() => setAuthor('Никита')}>N</button>
-        <button className={`filter-chip ${author === 'Саня' ? 'active' : ''}`} style={{ fontSize: 9, padding: '1px 6px' }} onClick={() => setAuthor('Саня')}>S</button>
-      </div>
-      <textarea className="input" style={{ fontSize: 10, minHeight: 40 }} placeholder="Comment..." value={text} onChange={e => setText(e.target.value)} autoFocus />
+      <MentionInput value={text} onChange={setText} members={memberRefs} placeholder="Comment... (@ to mention)" textarea autoFocus style={{ fontSize: 10, minHeight: 40 }} />
       <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
         <button className="btn-primary" style={{ fontSize: 10, padding: '3px 8px' }} onClick={submit}>Add</button>
         <button className="btn-ghost" style={{ fontSize: 10 }} onClick={onDone}>Cancel</button>
@@ -271,10 +271,25 @@ const KnowledgeBase: React.FC = () => {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    a: ({ href, children }) =>
-                      href && href.startsWith('#note:')
-                        ? <button className="kb-wikilink" onClick={() => setSelectedNoteId(href.slice(6))}>{children}</button>
-                        : <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+                    a: ({ href, children }) => {
+                      if (!href) return <>{children}</>;
+                      if (href.startsWith('#note:')) {
+                        return <button className="kb-wikilink" onClick={() => setSelectedNoteId(href.slice(6))}>{children}</button>;
+                      }
+                      const yt = youtubeId(href);
+                      if (yt) {
+                        return (
+                          <div className="kb-embed">
+                            <iframe src={`https://www.youtube.com/embed/${yt}`} title="YouTube" allowFullScreen loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+                          </div>
+                        );
+                      }
+                      if (VIDEO_EXT.test(href)) {
+                        return <video className="kb-video" src={href} controls preload="metadata" />;
+                      }
+                      return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+                    },
+                    img: ({ src, alt }) => <img className="kb-img" src={src} alt={alt || ''} loading="lazy" />,
                   }}
                 >{preprocessWikiLinks(selectedNote.content)}</ReactMarkdown>
               </div>
@@ -316,8 +331,8 @@ const KnowledgeBase: React.FC = () => {
                       </div>
                     ) : (
                       <>
-                        <div className="kb-comment-author">{c.author} · {new Date(c.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{c.editedAt ? ' (ред.)' : ''}</div>
-                        <div className="kb-comment-text">{c.text}</div>
+                        <div className="kb-comment-author"><UserChip userId={c.author.id} label={c.author.name} /> · {new Date(c.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{c.editedAt ? ' (ред.)' : ''}</div>
+                        <div className="kb-comment-text">{renderMentioned(c.text)}</div>
                         <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
                           <button className="btn-ghost" style={{ fontSize: 8, padding: '1px 5px' }} onClick={() => { setEditingCommentId(c.id); setEditCommentText(c.text); }}>Edit</button>
                           <button className="btn-ghost" style={{ fontSize: 8, padding: '1px 5px' }} onClick={() => deleteNoteComment(selectedNote.id, c.id)}>Del</button>

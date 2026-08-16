@@ -1,12 +1,15 @@
 export type TaskStatus = 'todo' | 'doing' | 'done';
 export type Priority = 'now' | 'soon' | 'later';
 export type TaskTag = 'product' | 'marketing' | 'tech' | 'legal' | 'finance' | 'other';
-export type Assignee = 'nikita' | 'sanya';
+export interface UserRef {
+  id: string;       // auth.users.id (uuid); legacy handle ('nikita'/'sanya') until the user registers
+  name: string;     // display name (full_name)
+  username: string; // @handle, lowercase, no '@'
+}
 
 export interface TaskComment {
   id: string;
-  author: Assignee;
-  authorName: string;
+  author: UserRef;
   text: string;
   createdAt: string;
   editedAt?: string;
@@ -19,10 +22,10 @@ export interface Task {
   status: TaskStatus;
   priority: Priority;
   tags: TaskTag[];
-  assignee: Assignee;
+  assignee: UserRef | null;
   deadline: string | null;
   createdAt: string;
-  createdBy: 'agent' | 'user';
+  createdBy: UserRef | 'agent';
   telegramMsgId?: number;
   comments: TaskComment[];
 }
@@ -52,7 +55,7 @@ export interface Note {
 
 export interface NoteComment {
   id: string;
-  author: string;
+  author: UserRef;
   text: string;
   selectedText: string;
   startOffset: number;
@@ -82,11 +85,6 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
   done: 'Готово',
 };
 
-export const ASSIGNEE_LABELS: Record<Assignee, string> = {
-  nikita: 'Никита',
-  sanya: 'Саня',
-};
-
 export const PRIORITY_COLORS: Record<Priority, string> = {
   now: '#000',
   soon: '#888',
@@ -101,17 +99,19 @@ export const STATUS_DOT: Record<TaskStatus, string> = {
 
 export type View = 'tasks' | 'kb' | 'board';
 
-export type NotifType = 'comment' | 'status' | 'assign';
+export type NotifType = 'comment' | 'status' | 'assign' | 'mention' | 'overdue';
 
 export interface Notification {
   id: string;
+  workspace_id: string;
   type: NotifType;
-  taskId: string;
-  taskTitle: string;
-  actor: string;
-  message: string;
-  createdAt: string;
+  entity_type: 'task' | 'note' | null;
+  entity_id: string | null;
+  entity_title: string | null;
+  actor_name: string | null;
+  message: string | null;
   read: boolean;
+  created_at: string;
 }
 
 export interface BoardBlock {

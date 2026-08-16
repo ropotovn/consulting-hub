@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../hooks/useStore';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { VIDEO_EXT, youtubeId } from '../media';
 
 function newId(): string {
   return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -96,6 +97,12 @@ const NoteEdit: React.FC = () => {
               <button type="button" className="fmt-btn" title="Toggle" onClick={() => setContent(c => c + '\n<details>\n<summary>Title</summary>\n\nContent\n</details>')}>▸</button>
               <button type="button" className="fmt-btn" title="Quote" onClick={() => setContent(c => c + '\n> quote')}>❝</button>
               <button type="button" className="fmt-btn" title="Link" onClick={() => setContent(c => c + '[[note title]]')}>🔗</button>
+              <button type="button" className="fmt-btn" title="Image" onClick={() => setContent(c => c + '\n![alt text](https://...)')}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </button>
+              <button type="button" className="fmt-btn" title="Video (mp4/webm/YouTube)" onClick={() => setContent(c => c + '\n[▶ Video](https://...mp4)')}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg>
+              </button>
             </div>
             <button type="button" className={`btn-ghost ${preview ? 'active' : ''}`} onClick={() => setPreview(!preview)}>
               {preview ? 'Edit' : 'Preview'}
@@ -108,7 +115,19 @@ const NoteEdit: React.FC = () => {
         {preview ? (
           <div className="editor-preview markdown-body">
             <h1>{title}</h1>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                a: ({ href, children }) => {
+                  if (!href) return <>{children}</>;
+                  const yt = youtubeId(href);
+                  if (yt) return <div className="kb-embed"><iframe src={`https://www.youtube.com/embed/${yt}`} title="YouTube" allowFullScreen loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" /></div>;
+                  if (VIDEO_EXT.test(href)) return <video className="kb-video" src={href} controls preload="metadata" />;
+                  return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
+                },
+                img: ({ src, alt }) => <img className="kb-img" src={src} alt={alt || ''} loading="lazy" />,
+              }}
+            >{content}</ReactMarkdown>
           </div>
         ) : (
           <textarea

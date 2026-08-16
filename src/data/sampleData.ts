@@ -1,5 +1,8 @@
 import type { Task, Note } from '../types';
 
+const NIKITA = { id: 'nikita', name: 'Никита', username: 'nikita' };
+const SANYA = { id: 'sanya', name: 'Саня', username: 'sanya' };
+
 export const sampleTasks: Task[] = [
   {
     id: 't1',
@@ -8,7 +11,7 @@ export const sampleTasks: Task[] = [
     status: 'done',
     priority: 'now',
     tags: ['product'],
-    assignee: 'nikita',
+    assignee: NIKITA,
     deadline: '2026-08-10',
     createdAt: '2026-08-05T10:00:00Z',
     createdBy: 'agent',
@@ -21,10 +24,10 @@ export const sampleTasks: Task[] = [
     status: 'doing',
     priority: 'now',
     tags: ['marketing', 'product'],
-    assignee: 'sanya',
+    assignee: SANYA,
     deadline: '2026-08-15',
     createdAt: '2026-08-06T12:00:00Z',
-    createdBy: 'user',
+    createdBy: NIKITA,
     comments: [],
   },
   {
@@ -34,7 +37,7 @@ export const sampleTasks: Task[] = [
     status: 'todo',
     priority: 'now',
     tags: ['product', 'marketing'],
-    assignee: 'nikita',
+    assignee: NIKITA,
     deadline: '2026-08-18',
     createdAt: '2026-08-07T09:00:00Z',
     createdBy: 'agent',
@@ -47,10 +50,10 @@ export const sampleTasks: Task[] = [
     status: 'todo',
     priority: 'soon',
     tags: ['legal', 'finance'],
-    assignee: 'sanya',
+    assignee: SANYA,
     deadline: '2026-08-25',
     createdAt: '2026-08-07T10:00:00Z',
-    createdBy: 'user',
+    createdBy: NIKITA,
     comments: [],
   },
   {
@@ -60,7 +63,7 @@ export const sampleTasks: Task[] = [
     status: 'doing',
     priority: 'soon',
     tags: ['product'],
-    assignee: 'nikita',
+    assignee: NIKITA,
     deadline: '2026-08-12',
     createdAt: '2026-08-06T08:00:00Z',
     createdBy: 'agent',
@@ -73,7 +76,7 @@ export const sampleTasks: Task[] = [
     status: 'todo',
     priority: 'later',
     tags: ['marketing', 'product'],
-    assignee: 'sanya',
+    assignee: SANYA,
     deadline: null,
     createdAt: '2026-08-07T11:00:00Z',
     createdBy: 'agent',
@@ -86,10 +89,10 @@ export const sampleTasks: Task[] = [
     status: 'todo',
     priority: 'soon',
     tags: ['tech'],
-    assignee: 'nikita',
+    assignee: NIKITA,
     deadline: '2026-08-20',
     createdAt: '2026-08-07T12:00:00Z',
-    createdBy: 'user',
+    createdBy: NIKITA,
     comments: [],
   },
 ];

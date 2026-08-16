@@ -18,12 +18,12 @@ const NotificationBell: React.FC = () => {
 
   const handleClick = (n: Notification) => {
     markNotifRead(n.id);
-    const task = tasks.find(t => t.id === n.taskId);
+    const task = tasks.find(t => t.id === n.entity_id);
     if (task) { setEditingTask(task); setShowTaskForm(true); }
     setOpen(false);
   };
 
-  const iconMap: Record<string, string> = { comment: '💬', status: '🔄', assign: '👤' };
+  const iconMap: Record<string, string> = { comment: '💬', status: '🔄', assign: '👤', mention: '@', overdue: '⏰' };
 
   return (
     <div className="notif-bell-wrap" ref={ref}>
@@ -53,12 +53,12 @@ const NotificationBell: React.FC = () => {
               <div key={n.id} className={`notif-item ${n.read ? '' : 'unread'}`} onClick={() => handleClick(n)}>
                 <span className="notif-icon">{iconMap[n.type] || '📌'}</span>
                 <div className="notif-body">
-                  <div className="notif-task">{n.taskTitle}</div>
+                  <div className="notif-task">{n.entity_title}</div>
                   <div className="notif-msg">
-                    {n.type === 'status' && <span>{STATUS_LABELS[n.message.split(' → ')[0] as keyof typeof STATUS_LABELS] || n.message.split(' → ')[0]} → {STATUS_LABELS[n.message.split(' → ')[1] as keyof typeof STATUS_LABELS] || n.message.split(' → ')[1]}</span>}
-                    {n.type === 'comment' && <span><strong>{n.actor}</strong>: {n.message}</span>}
+                    {n.type === 'status' && n.message && <span>{STATUS_LABELS[n.message.split(' → ')[0] as keyof typeof STATUS_LABELS] || n.message.split(' → ')[0]} → {STATUS_LABELS[n.message.split(' → ')[1] as keyof typeof STATUS_LABELS] || n.message.split(' → ')[1]}</span>}
+                    {n.type !== 'status' && <span><strong>{n.actor_name}</strong>{n.message ? `: ${n.message}` : ''}</span>}
                   </div>
-                  <div className="notif-time">{new Date(n.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>
+                  <div className="notif-time">{new Date(n.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
               </div>
             ))}

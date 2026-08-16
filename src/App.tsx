@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { StoreProvider, useStore } from './hooks/useStore';
 import { ThemeProvider, useTheme } from './hooks/useTheme';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import { WorkspaceProvider } from './hooks/useWorkspaces';
 import { useTelegram } from './hooks/useTelegram';
 import Sidebar from './components/Sidebar';
 import TaskBoard from './components/TaskBoard';
@@ -8,6 +10,8 @@ import TaskForm from './components/TaskForm';
 import KnowledgeBase from './components/KnowledgeBase';
 import NoteEdit from './components/NoteEdit';
 import MobileNav from './components/MobileNav';
+import AuthScreen from './components/AuthScreen';
+import WorkspaceSwitcher from './components/WorkspaceSwitcher';
 import './App.css';
 
 const Board = lazy(() => import('./components/Board'));
@@ -16,19 +20,28 @@ const AppInner: React.FC = () => {
   const { view, showTaskForm, editingNoteId } = useStore();
   const { isReady } = useTelegram();
   const { theme, setTheme, themes } = useTheme();
+  const { configured, loading: authLoading, user } = useAuth();
 
-  if (!isReady) {
+  if (!isReady || (configured && authLoading)) {
     return (
       <div className="loading-screen">
-        shtab
+        stabs
       </div>
     );
+  }
+
+  if (configured && !user) {
+    return <AuthScreen />;
   }
 
   return (
     <div className="app">
       <Sidebar />
       <main className="main-content">
+        {/* Mobile workspace switcher */}
+        <div className="mobile-topbar">
+          <WorkspaceSwitcher />
+        </div>
         {/* Mobile theme strip */}
         <div className="mobile-theme-strip">
           {themes.map(t => (
@@ -58,9 +71,13 @@ const AppInner: React.FC = () => {
 
 const App: React.FC = () => (
   <ThemeProvider>
-    <StoreProvider>
-      <AppInner />
-    </StoreProvider>
+    <AuthProvider>
+      <WorkspaceProvider>
+        <StoreProvider>
+          <AppInner />
+        </StoreProvider>
+      </WorkspaceProvider>
+    </AuthProvider>
   </ThemeProvider>
 );
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { Assignee } from '../types';
 
 interface TelegramUser {
   id: number;
@@ -7,11 +6,6 @@ interface TelegramUser {
   last_name?: string;
   username?: string;
 }
-
-const ID_MAP: Record<number, Assignee> = {
-  476641608: 'nikita',
-  357499890: 'sanya',
-};
 
 export function useTelegram() {
   const [user, setUser] = useState<TelegramUser | null>(null);
@@ -30,10 +24,6 @@ export function useTelegram() {
     setUser(tg.initDataUnsafe?.user || null);
     setIsReady(true);
   }, []);
-
-  // Auto-detect who's using the app based on Telegram ID
-  const currentUser: Assignee | null = user ? (ID_MAP[user.id] || null) : null;
-  const currentUserName = currentUser === 'nikita' ? 'Никита' : currentUser === 'sanya' ? 'Саня' : null;
 
   const showConfirm = (message: string): Promise<boolean> => {
     const tg = (window as any).Telegram?.WebApp;
@@ -59,5 +49,5 @@ export function useTelegram() {
     }
   };
 
-  return { user, currentUser, currentUserName, isReady, showConfirm, showAlert, haptic };
+  return { user, isReady, showConfirm, showAlert, haptic };
 }

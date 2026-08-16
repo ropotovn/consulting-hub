@@ -1,13 +1,19 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
+import { useWorkspaces } from '../hooks/useWorkspaces';
 import { STATUS_LABELS, PRIORITY_LABELS, STATUS_DOT } from '../types';
 import type { TaskStatus, Priority } from '../types';
+import UserChip from './UserChip';
 
 const TaskFilters: React.FC = () => {
   const { filterStatus, setFilterStatus, filterPriority, setFilterPriority, filterAssignee, setFilterAssignee } = useStore();
+  const { memberRefs } = useWorkspaces();
   const statuses: (TaskStatus | 'all')[] = ['all', 'todo', 'doing', 'done'];
   const priorities: (Priority | 'all')[] = ['all', 'now', 'soon', 'later'];
-  const assignees = ['all', 'nikita', 'sanya'];
+  const assignees = [
+    { id: 'all', label: 'All' },
+    ...memberRefs.map(m => ({ id: m.id, label: m.name.split(' ')[0] })),
+  ];
 
   return (
     <div className="filters">
@@ -15,7 +21,7 @@ const TaskFilters: React.FC = () => {
       <span className="filter-sep">|</span>
       {priorities.map(p => (<button key={p} className={`filter-chip ${filterPriority === p ? 'active' : ''}`} onClick={() => setFilterPriority(p)}>{p === 'all' ? 'All' : PRIORITY_LABELS[p]}</button>))}
       <span className="filter-sep">|</span>
-      {assignees.map(a => (<button key={a} className={`filter-chip ${filterAssignee === a ? 'active' : ''}`} onClick={() => setFilterAssignee(a)}>{a === 'all' ? 'All' : a === 'nikita' ? 'N' : 'S'}</button>))}
+      {assignees.map(a => (<button key={a.id} className={`filter-chip ${filterAssignee === a.id ? 'active' : ''}`} onClick={() => setFilterAssignee(a.id)}>{a.label}</button>))}
     </div>
   );
 };
@@ -49,7 +55,7 @@ const TaskBoard: React.FC = () => {
   const filtered = tasks.filter(t => {
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
     if (filterPriority !== 'all' && t.priority !== filterPriority) return false;
-    if (filterAssignee !== 'all' && t.assignee !== filterAssignee) return false;
+    if (filterAssignee !== 'all' && (t.assignee?.id ?? '') !== filterAssignee) return false;
     return true;
   });
 
@@ -252,11 +258,11 @@ const TaskBoard: React.FC = () => {
                     <div className="card-tags">{task.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}</div>
                     {task.comments && task.comments.length > 0 && (
                       <div className="card-last-comment">
-                        {task.comments[task.comments.length - 1].authorName}: {task.comments[task.comments.length - 1].text.slice(0, 60)}{task.comments[task.comments.length - 1].text.length > 60 ? '…' : ''}
+                        {task.comments[task.comments.length - 1].author.name}: {task.comments[task.comments.length - 1].text.slice(0, 60)}{task.comments[task.comments.length - 1].text.length > 60 ? '…' : ''}
                       </div>
                     )}
                   </div>
-                  <div className="card-assignee">{task.assignee === 'nikita' ? 'N' : 'S'}</div>
+                  <div className="card-assignee">{task.assignee ? <UserChip userId={task.assignee.id} label={task.assignee.name.charAt(0).toUpperCase()} /> : ''}</div>
                 </div>
               ))}
               {grouped[status].length === 0 && <div className="column-empty">—</div>}
