@@ -24,7 +24,7 @@
       "marketing",
       "product"
     ],
-    "assignee": "sanya",
+    "assignee": "nikita",
     "deadline": "2026-08-15",
     "createdAt": "2026-08-06T12:00:00Z",
     "createdBy": "user",
@@ -35,6 +35,13 @@
         "authorName": "Никита",
         "text": "Тут работаю, скоро будет",
         "createdAt": "2026-08-08T02:23:40.984Z"
+      },
+      {
+        "id": "cmsjr1shd",
+        "author": "sanya",
+        "authorName": "Саня",
+        "text": "я саша я стартапер",
+        "createdAt": "2026-08-08T02:23:26.065Z"
       }
     ]
   },
@@ -113,7 +120,22 @@
     "deadline": "2026-08-15",
     "createdAt": "2026-08-07T11:00:00Z",
     "createdBy": "agent",
-    "comments": []
+    "comments": [
+      {
+        "id": "cmsnhkssi",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "тестовый комм заговоренный на деплой",
+        "createdAt": "2026-08-10T17:09:21.474Z"
+      },
+      {
+        "id": "cmsnjchko",
+        "author": "nikita",
+        "authorName": "Никита",
+        "text": "саня, ответь тут плиз",
+        "createdAt": "2026-08-10T17:58:52.920Z"
+      }
+    ]
   },
   {
     "id": "t7",
