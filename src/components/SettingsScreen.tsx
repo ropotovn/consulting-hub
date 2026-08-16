@@ -46,17 +46,22 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
   const onFile = async (f: File | undefined) => {
     if (!f || !user) return;
     setBusy(true); setError(''); setNotice('');
-    const ext = (f.name.split('.').pop() || 'png').toLowerCase();
-    const path = `${user.id}/avatar.${ext}`;
-    const { error: upErr } = await supabase.storage.from('avatars').upload(path, f, {
-      upsert: true,
-      contentType: f.type,
-    });
-    if (upErr) { setBusy(false); setError(upErr.message); return; }
-    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-    const r = await updateProfile({ avatar_url: data.publicUrl });
-    setBusy(false);
-    if (r.error) setError(r.error); else setNotice('Photo updated');
+    try {
+      const jpegBlob = await toJpeg(f);
+      const path = `${user.id}/avatar.jpg`;
+      const { error: upErr } = await supabase.storage.from('avatars').upload(path, jpegBlob, {
+        upsert: true,
+        contentType: 'image/jpeg',
+      });
+      if (upErr) { setBusy(false); setError(upErr.message); return; }
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+      const r = await updateProfile({ avatar_url: data.publicUrl });
+      setBusy(false);
+      if (r.error) setError(r.error); else setNotice('Photo updated');
+    } catch {
+      setBusy(false);
+      setError('Could not read image — use JPG or PNG.');
+    }
   };
 
   return (
@@ -110,5 +115,25 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
 function initials(s?: string | null): string {
   if (!s) return '?';
   return s.split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+}
+
+// Normalize any image (HEIC/JPG/PNG/WebP) to a downscaled JPEG so browsers render it.
+async function toJpeg(file: File): Promise<Blob> {
+  const bmp = await createImageBitmap(file);
+  try {
+    const MAX = 1280;
+    const scale = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bmp.width * scale));
+    canvas.height = Math.max(1, Math.round(bmp.height * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('no canvas');
+    ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/jpeg', 0.85));
+    if (!blob) throw new Error('encode failed');
+    return blob;
+  } finally {
+    bmp.close();
+  }
 }
 export { initials };
