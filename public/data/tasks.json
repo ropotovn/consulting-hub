@@ -1,5 +1,24 @@
 [
   {
+    "id": "tmumvgew0ca3p",
+    "title": "Побриться",
+    "description": "Побриться пердуну",
+    "status": "todo",
+    "priority": "now",
+    "tags": [
+      "marketing"
+    ],
+    "assignee": null,
+    "deadline": "275760-09-09",
+    "createdAt": "2026-09-29T16:09:29.952Z",
+    "createdBy": {
+      "id": "5fc08ac1-5f07-48b2-a4c3-068a7f6c408a",
+      "name": "perdun",
+      "username": "perdun1"
+    },
+    "comments": []
+  },
+  {
     "id": "t1",
     "title": "Определить MVP-фичи для стартапа",
     "description": "Нужно сесть и расписать минимальный набор фич, с которым можно выходить к первым пользователям. Отсечь всё лишнее.",
