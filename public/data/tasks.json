@@ -1,22 +1,5 @@
 [
   {
-    "id": "tmumvhmoycrrs",
-    "title": "aa",
-    "description": "aaaaaa",
-    "status": "todo",
-    "priority": "soon",
-    "tags": [],
-    "assignee": null,
-    "deadline": "9999-09-09",
-    "createdAt": "2026-09-29T16:10:26.722Z",
-    "createdBy": {
-      "id": "609c5a48-6058-4647-8446-20322b4411cf",
-      "name": "perdun",
-      "username": "perdun"
-    },
-    "comments": []
-  },
-  {
     "id": "t1",
     "title": "Определить MVP-фичи для стартапа",
     "description": "Нужно сесть и расписать минимальный набор фич, с которым можно выходить к первым пользователям. Отсечь всё лишнее.",
@@ -285,6 +268,23 @@
       "id": "5fc08ac1-5f07-48b2-a4c3-068a7f6c408a",
       "name": "perdun",
       "username": "perdun1"
+    },
+    "comments": []
+  },
+  {
+    "id": "tmumvhmoycrrs",
+    "title": "aa",
+    "description": "aaaaaa",
+    "status": "todo",
+    "priority": "soon",
+    "tags": [],
+    "assignee": null,
+    "deadline": "9999-09-09",
+    "createdAt": "2026-09-29T16:10:26.722Z",
+    "createdBy": {
+      "id": "609c5a48-6058-4647-8446-20322b4411cf",
+      "name": "perdun",
+      "username": "perdun"
     },
     "comments": []
   }
